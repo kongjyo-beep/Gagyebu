@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>아이폰 가계부 Final</title>
+<title>아이폰 가계부 v5</title>
 <style>
     :root {
         --ios-bg: #F2F2F7;
@@ -30,11 +30,12 @@
         box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 20px; position: relative;
     }
 
-    /* 설정 버튼 */
+    /* 심플한 설정 버튼 (SVG) */
     .settings-btn {
         position: absolute; top: 20px; right: 20px;
-        background: none; border: none; font-size: 22px; cursor: pointer; color: var(--ios-blue);
+        background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6;
     }
+    .settings-btn svg { width: 22px; height: 22px; fill: var(--ios-gray-text); }
 
     .main-balance { text-align: center; margin-bottom: 25px; margin-top: 10px; }
     .header-label { font-size: 14px; color: var(--ios-gray-text); margin-bottom: 6px; }
@@ -128,13 +129,17 @@
         display: flex; justify-content: space-between; align-items: center;
     }
     .record-item:active { background: #f5f5f5; }
-    .record-cat { font-size: 16px; font-weight: 500; margin-bottom: 2px;}
-    .record-sub { font-size: 12px; color: #999; }
+    .record-info { display: flex; flex-direction: column; gap: 4px; }
+    .record-cat { font-size: 16px; font-weight: 500;}
+    .record-meta { font-size: 12px; color: #999; display: flex; gap: 6px; align-items: center;}
+    .tag-fixed { background: #E5E5EA; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;}
+    .tag-memo { color: #888; font-style: italic;}
+    
     .amount-expense { color: var(--ios-black); font-weight:600; font-size: 16px; }
     .amount-income { color: var(--ios-green); font-weight:600; font-size: 16px; }
     .amount-saving { color: var(--ios-blue); font-weight:600; font-size: 16px; }
 
-    /* --- 액션 시트 --- */
+    /* --- 액션 시트/설정 --- */
     .action-sheet-overlay {
         position: fixed; top:0; left:0; right:0; bottom:0;
         background: rgba(0,0,0,0.5); z-index: 2000;
@@ -162,7 +167,9 @@
 <body>
 
 <div class="header-card">
-    <button class="settings-btn" onclick="openSettings()">⚙️</button>
+    <button class="settings-btn" onclick="openSettings()">
+        <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+    </button>
     <div class="main-balance">
         <div class="header-label">현재 잔고</div>
         <div class="balance-amount" id="balanceDisplay">0원</div>
@@ -198,11 +205,17 @@
 
         <div class="form-row">
             <label class="form-label">유형</label>
-            <select id="inputType" onchange="handleTypeChange()">
-                <option value="expense">지출</option>
-                <option value="saving">저축</option>
-                <option value="income">수입</option>
-            </select>
+            <div style="display:flex; gap:10px;">
+                <select id="inputType" onchange="handleTypeChange()" style="flex:1;">
+                    <option value="expense">지출</option>
+                    <option value="saving">저축</option>
+                    <option value="income">수입</option>
+                </select>
+                <select id="expenseNature" class="hidden" style="flex:1; border-color:#007AFF; color:#007AFF; font-weight:600;">
+                    <option value="variable">변동비 (예산차감)</option>
+                    <option value="fixed">고정비 (예산제외)</option>
+                </select>
+            </div>
         </div>
 
         <div class="form-row" id="categoryRow">
@@ -223,33 +236,63 @@
             <label class="form-label">금액</label>
             <input type="text" id="inputAmount" placeholder="0" inputmode="numeric" onkeyup="formatCurrencyInput(this)">
         </div>
+        
+        <div class="form-row">
+            <label class="form-label">메모 (선택)</label>
+            <input type="text" id="inputMemo" placeholder="내용을 입력하세요">
+        </div>
 
         <button class="btn-main" style="width:100%" onclick="saveRecord()">저장하기</button>
     </div>
 </div>
 
+<div class="modal-overlay" id="initialSavingsOverlay" onclick="closeInitialSavingsModal(event)">
+    <div class="input-group">
+        <h3 style="margin:0 0 10px 0;">저축 통장 설정</h3>
+        <p style="font-size:13px; color:#888; margin-bottom:20px;">저축 통장의 <b>기초 잔액(시작 금액)</b>을 입력하세요.<br>기록된 저축 내역은 여기에 더해집니다.</p>
+        <div class="form-row">
+            <input type="text" id="initialSavingsInput" placeholder="0" inputmode="numeric" onkeyup="formatCurrencyInput(this)" style="font-size:24px; text-align:center; font-weight:700;">
+        </div>
+        <button class="btn-main" style="width:100%" onclick="saveInitialSavings()">설정 저장</button>
+    </div>
+</div>
+
+
 <div class="modal-overlay" id="budgetOverlay" onclick="closeBudgetModal(event)">
     <div class="input-group">
-        <h3 style="margin:0 0 10px 0;">요일별 예산</h3>
-        <p style="font-size:13px; color:#888; margin-bottom:20px;">일요일부터 토요일까지 하루 예산을 설정하세요.</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div><label class="form-label" style="color:red">일요일</label><input type="text" id="bg_0" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
-            <div><label class="form-label">월요일</label><input type="text" id="bg_1" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
-            <div><label class="form-label">화요일</label><input type="text" id="bg_2" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
-            <div><label class="form-label">수요일</label><input type="text" id="bg_3" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
-            <div><label class="form-label">목요일</label><input type="text" id="bg_4" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
-            <div><label class="form-label">금요일</label><input type="text" id="bg_5" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
-            <div><label class="form-label" style="color:blue">토요일</label><input type="text" id="bg_6" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
+        <h3 style="margin:0 0 10px 0;">요일별 예산 (변동비)</h3>
+        <p style="font-size:13px; color:#888; margin-bottom:15px;">고정비를 제외한 하루 생활비를 입력하세요.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+            <div><label class="form-label" style="color:red">일요일</label><input type="text" id="bg_0" inputmode="numeric" onkeyup="calcBudgetTotal()"></div>
+            <div><label class="form-label">월요일</label><input type="text" id="bg_1" inputmode="numeric" onkeyup="calcBudgetTotal()"></div>
+            <div><label class="form-label">화요일</label><input type="text" id="bg_2" inputmode="numeric" onkeyup="calcBudgetTotal()"></div>
+            <div><label class="form-label">수요일</label><input type="text" id="bg_3" inputmode="numeric" onkeyup="calcBudgetTotal()"></div>
+            <div><label class="form-label">목요일</label><input type="text" id="bg_4" inputmode="numeric" onkeyup="calcBudgetTotal()"></div>
+            <div><label class="form-label">금요일</label><input type="text" id="bg_5" inputmode="numeric" onkeyup="calcBudgetTotal()"></div>
+            <div><label class="form-label" style="color:blue">토요일</label><input type="text" id="bg_6" inputmode="numeric" onkeyup="calcBudgetTotal()"></div>
         </div>
-        <button class="btn-main" style="width:100%; margin-top:20px;" onclick="saveBudgets()">저장</button>
+        
+        <div style="background:#F2F2F7; padding:15px; border-radius:12px; margin-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span style="font-size:13px; color:#666;">주간 총 예산</span>
+                <span id="weeklyBudgetTotal" style="font-weight:600; font-size:14px;">0원</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:13px; color:#666;">월 예상 변동비</span>
+                <span id="monthlyBudgetTotal" style="font-weight:700; font-size:15px; color:var(--ios-blue);">0원</span>
+            </div>
+        </div>
+
+        <button class="btn-main" style="width:100%;" onclick="saveBudgets()">저장</button>
     </div>
 </div>
 
 <div class="action-sheet-overlay" id="settingsSheet" onclick="closeSettings(event)">
     <div class="action-sheet">
         <div style="border-radius:14px; overflow:hidden; margin-bottom:8px;">
-            <button class="sheet-btn" style="color:black; font-weight:600;">환경 설정</button>
-            <div style="height:1px; background:#E5E5EA;"></div>
+            <div style="background:white; padding:15px; text-align:center; font-size:13px; color:#888; border-bottom:1px solid #E5E5EA;">
+                데이터 관리
+            </div>
             <button class="sheet-btn sheet-delete" onclick="resetAllData()">⚠️ 데이터 전체 초기화</button>
         </div>
         <button class="sheet-btn sheet-cancel" onclick="closeSettingsReal()">닫기</button>
@@ -288,15 +331,20 @@
 <script>
     // --- 초기 데이터 로드 ---
     let balance = parseInt(localStorage.getItem("balance")) || 0;
-    let savings = parseInt(localStorage.getItem("savings")) || 0;
-    let payday = parseInt(localStorage.getItem("payday")) || 1; // 월급날 (기본 1일)
+    // v5 변경: savings는 이제 '기초 잔액(initialSavings)'과 구분합니다. 
+    // 하위 호환성을 위해 기존 savings 값을 initialSavings로 간주합니다.
+    let initialSavings = parseInt(localStorage.getItem("initialSavings"));
+    if (isNaN(initialSavings)) {
+        initialSavings = parseInt(localStorage.getItem("savings")) || 0;
+    }
+    
+    let payday = parseInt(localStorage.getItem("payday")) || 1; 
     let records = JSON.parse(localStorage.getItem("records")) || {};
     let budgets = JSON.parse(localStorage.getItem("dailyBudgets")) || [50000, 30000, 30000, 30000, 30000, 30000, 50000];
 
     let currentDate = new Date();
     let selectedDate = new Date();
     
-    // 편집용 임시 변수
     let targetKey = null;
     let targetIndex = null;
     let isEditing = false;
@@ -309,23 +357,21 @@
         showRecordsForDate(new Date());
     });
 
-    // --- 유틸리티: 콤마 포맷팅 ---
+    // --- 유틸리티 ---
     function formatMoney(num) { return num.toLocaleString(); }
     
-    // 입력 필드에서 실시간 콤마 적용
     function formatCurrencyInput(input) {
-        let value = input.value.replace(/[^0-9]/g, ''); // 숫자 빼고 제거
+        let value = input.value.replace(/[^0-9]/g, '');
         if (value) {
             input.value = parseInt(value).toLocaleString();
         } else {
             input.value = "";
         }
+        // 예산 입력창일 경우 합계 재계산 트리거
+        if(input.id.startsWith('bg_')) calcBudgetTotal();
     }
     
-    // 콤마 제거하고 숫자로 변환
-    function parseCurrency(str) {
-        return parseInt(str.replace(/,/g, '')) || 0;
-    }
+    function parseCurrency(str) { return parseInt(str.replace(/,/g, '')) || 0; }
 
     function getDateKey(dateObj) {
         const offset = dateObj.getTimezoneOffset() * 60000;
@@ -334,7 +380,7 @@
     
     function saveData() {
         localStorage.setItem("balance", balance);
-        localStorage.setItem("savings", savings);
+        localStorage.setItem("initialSavings", initialSavings);
         localStorage.setItem("payday", payday);
         localStorage.setItem("records", JSON.stringify(records));
         localStorage.setItem("dailyBudgets", JSON.stringify(budgets));
@@ -350,29 +396,22 @@
     function resetAllData() {
         if(confirm("정말 모든 데이터를 초기화하시겠습니까? 복구할 수 없습니다.")) {
             localStorage.clear();
-            alert("초기화되었습니다.");
             location.reload();
         }
     }
 
-    // --- 롱프레스 기능 (월급날 & 저축수정) ---
+    // --- 롱프레스 기능 ---
     function setupLongPress() {
-        // 저축 통장 롱프레스
+        // 저축 통장 (전용 모달 열기)
         addLongPressEvent(document.getElementById("boxSavings"), () => {
-            let newVal = prompt("저축 통장의 실제 잔액을 입력하세요 (숫자만)", savings);
-            if(newVal !== null) {
-                let parsed = parseInt(newVal);
-                if(!isNaN(parsed)) {
-                    savings = parsed;
-                    saveData();
-                    alert("저축 잔액이 수정되었습니다.");
-                }
-            }
+            document.getElementById("initialSavingsOverlay").classList.add("active");
+            document.getElementById("initialSavingsInput").value = initialSavings.toLocaleString();
+            document.getElementById("initialSavingsInput").focus();
         });
 
-        // 아낀 돈(월급날) 롱프레스
+        // 아낀 돈 (기준일 설정)
         addLongPressEvent(document.getElementById("boxSavingGoal"), () => {
-            let newPayday = prompt("월급날(기준일)을 입력하세요 (1~31)", payday);
+            let newPayday = prompt("이번 달 아낀 돈 계산 기준일(월급날)을 입력하세요 (1~31)", payday);
             if(newPayday !== null) {
                 let parsed = parseInt(newPayday);
                 if(parsed >= 1 && parsed <= 31) {
@@ -388,53 +427,61 @@
 
     function addLongPressEvent(el, callback) {
         let timer;
-        el.addEventListener('touchstart', () => { timer = setTimeout(() => { if(navigator.vibrate) navigator.vibrate(50); callback(); }, 800); });
-        el.addEventListener('touchend', () => clearTimeout(timer));
-        el.addEventListener('mousedown', () => { timer = setTimeout(callback, 800); });
-        el.addEventListener('mouseup', () => clearTimeout(timer));
+        const start = () => { timer = setTimeout(() => { if(navigator.vibrate) navigator.vibrate(50); callback(); }, 800); };
+        const end = () => clearTimeout(timer);
+        el.addEventListener('touchstart', start);
+        el.addEventListener('touchend', end);
+        el.addEventListener('mousedown', start);
+        el.addEventListener('mouseup', end);
     }
 
+    // --- 저축 기초 잔액 모달 ---
+    function closeInitialSavingsModal(e) { if(e.target.id==="initialSavingsOverlay") document.getElementById("initialSavingsOverlay").classList.remove("active"); }
+    function saveInitialSavings() {
+        let val = parseCurrency(document.getElementById("initialSavingsInput").value);
+        initialSavings = val;
+        saveData();
+        document.getElementById("initialSavingsOverlay").classList.remove("active");
+    }
 
-    // --- 대시보드 업데이트 (월급날 로직 적용) ---
+    // --- 대시보드 업데이트 ---
     function updateDashboard() {
         document.getElementById("balanceDisplay").innerText = formatMoney(balance) + "원";
-        document.getElementById("savingsDisplay").innerText = formatMoney(savings) + "원";
+        
+        // 저축 총액 = 기초 잔액 + 기록된 모든 저축 내역 합계
+        let totalRecordedSavings = 0;
+        Object.values(records).flat().forEach(r => {
+            if(r.type === 'saving') totalRecordedSavings += r.amount;
+        });
+        document.getElementById("savingsDisplay").innerText = formatMoney(initialSavings + totalRecordedSavings) + "원";
+        
         document.getElementById("paydayLabel").innerText = `매월 ${payday}일 기준`;
 
-        // 월급날 기준 기간 계산
+        // 아낀 돈 계산 (고정비 제외)
         let today = new Date();
-        // 오늘 날짜가 월급날보다 작으면(이전이면), 시작일은 저번달 월급날
-        // 오늘 날짜가 월급날보다 크거나 같으면, 시작일은 이번달 월급날
-        
         let startYear = today.getFullYear();
-        let startMonth = today.getMonth(); // 0-11
+        let startMonth = today.getMonth();
         
-        if (today.getDate() < payday) {
-            startMonth = startMonth - 1; // 지난달
-        }
+        if (today.getDate() < payday) { startMonth = startMonth - 1; }
         
-        // 날짜 루프: 시작일 ~ 어제까지 (오늘은 아직 안 끝났지만 실시간 반영을 원하면 오늘 포함)
-        // 여기선 "오늘"까지 포함해서 계산
         let accumulatedSaved = 0;
         let loopDate = new Date(startYear, startMonth, payday);
         
-        // 무한루프 방지 및 오늘까지만 계산
         while(loopDate <= today) {
             let key = getDateKey(loopDate);
             let dayOfWeek = loopDate.getDay();
             let dailyBudget = budgets[dayOfWeek];
             
-            let dailyExpense = 0;
+            let dailyVariableExpense = 0;
             if(records[key]){
                 records[key].forEach(r => {
-                    if(r.type === 'expense') dailyExpense += r.amount;
+                    // 고정비(fixed)가 아닌 경우에만 예산 차감
+                    if(r.type === 'expense' && r.nature !== 'fixed') {
+                        dailyVariableExpense += r.amount;
+                    }
                 });
             }
-            
-            // 미래 예산은 미리 땡겨오지 않음. (오늘이 loopDate보다 크거나 같을때만)
-            accumulatedSaved += (dailyBudget - dailyExpense);
-            
-            // 하루 증가
+            accumulatedSaved += (dailyBudget - dailyVariableExpense);
             loopDate.setDate(loopDate.getDate() + 1);
         }
 
@@ -453,18 +500,23 @@
         document.getElementById("formOverlay").classList.add("active");
         const typeSelect = document.getElementById("inputType");
         const catRow = document.getElementById("categoryRow");
+        const natureSelect = document.getElementById("expenseNature");
+        const memoInput = document.getElementById("inputMemo");
 
         if(record) { // 수정
             document.getElementById("formTitle").innerText = "내역 수정";
             document.getElementById("inputDate").value = targetKey;
-            // 콤마 적용해서 값 넣기
             document.getElementById("inputAmount").value = record.amount.toLocaleString();
+            memoInput.value = record.memo || "";
             
             typeSelect.innerHTML = `<option value="expense">지출</option><option value="saving">저축</option><option value="income">수입</option>`;
             typeSelect.value = record.type;
 
             if(record.type === 'expense') {
                 catRow.classList.remove("hidden");
+                natureSelect.classList.remove("hidden");
+                natureSelect.value = record.nature || 'variable';
+                
                 const basic = ["식비","교통","쇼핑","주거","의료","문화"];
                 if(basic.includes(record.category)){
                     document.getElementById("inputCategory").value = record.category;
@@ -476,6 +528,7 @@
                 }
             } else {
                 catRow.classList.add("hidden");
+                natureSelect.classList.add("hidden");
             }
         } else { // 신규
             isEditing = false;
@@ -483,15 +536,19 @@
             document.getElementById("inputDate").valueAsDate = selectedDate;
             document.getElementById("inputAmount").value = "";
             document.getElementById("customCategory").value = "";
+            memoInput.value = "";
             
             typeSelect.innerHTML = "";
             if(mode === 'expense') {
                 typeSelect.add(new Option("지출", "expense"));
                 typeSelect.add(new Option("저축", "saving"));
                 catRow.classList.remove("hidden");
+                natureSelect.classList.remove("hidden");
+                natureSelect.value = 'variable';
             } else {
                 typeSelect.add(new Option("수입", "income"));
                 catRow.classList.add("hidden");
+                natureSelect.classList.add("hidden");
             }
         }
     }
@@ -499,8 +556,15 @@
     function handleTypeChange() {
         let type = document.getElementById("inputType").value;
         let catRow = document.getElementById("categoryRow");
-        if(type === 'expense') catRow.classList.remove("hidden");
-        else catRow.classList.add("hidden");
+        let natureSelect = document.getElementById("expenseNature");
+        
+        if(type === 'expense') {
+            catRow.classList.remove("hidden");
+            natureSelect.classList.remove("hidden");
+        } else {
+            catRow.classList.add("hidden");
+            natureSelect.classList.add("hidden");
+        }
     }
 
     function handleCategoryChange() {
@@ -517,15 +581,17 @@
     function saveRecord() {
         let dateVal = document.getElementById("inputDate").value;
         let type = document.getElementById("inputType").value;
-        // 콤마 제거 후 파싱
         let amount = parseCurrency(document.getElementById("inputAmount").value);
+        let memo = document.getElementById("inputMemo").value;
         let category = "-";
+        let nature = "variable"; // 기본 변동비
 
         if(!dateVal || amount === 0) { alert("날짜와 금액을 확인하세요."); return; }
 
         if(type === 'expense') {
             let catSelect = document.getElementById("inputCategory").value;
             category = (catSelect === '기타') ? (document.getElementById("customCategory").value || '기타') : catSelect;
+            nature = document.getElementById("expenseNature").value;
         } else if(type === 'saving') {
             category = "저축";
         } else {
@@ -534,8 +600,9 @@
 
         if(isEditing) {
             let oldR = records[targetKey][targetIndex];
+            // 잔고 복구 로직
             if(oldR.type === 'income') balance -= oldR.amount;
-            else if(oldR.type === 'saving') { balance += oldR.amount; savings -= oldR.amount; }
+            else if(oldR.type === 'saving') balance += oldR.amount; 
             else balance += oldR.amount; 
             
             records[targetKey].splice(targetIndex, 1);
@@ -543,10 +610,10 @@
         }
 
         if(!records[dateVal]) records[dateVal] = [];
-        records[dateVal].push({ type, amount, category });
+        records[dateVal].push({ type, amount, category, memo, nature });
 
+        // 새 데이터 잔고 반영 (저축도 잔고에선 빠짐, 고정비도 잔고에선 빠짐)
         if(type === 'income') balance += amount;
-        else if(type === 'saving') { balance -= amount; savings += amount; }
         else balance -= amount; 
 
         saveData();
@@ -579,7 +646,7 @@
         let record = records[targetKey][targetIndex];
         
         if(record.type === 'income') balance -= record.amount;
-        else if(record.type === 'saving') { balance += record.amount; savings -= record.amount; }
+        else if(record.type === 'saving') balance += record.amount;
         else balance += record.amount;
 
         records[targetKey].splice(targetIndex, 1);
@@ -594,14 +661,24 @@
     function openBudgetModal() {
         document.getElementById("budgetOverlay").classList.add("active");
         for(let i=0; i<7; i++) {
-            // 콤마 넣어서 보여주기
             document.getElementById(`bg_${i}`).value = budgets[i].toLocaleString();
         }
+        calcBudgetTotal();
     }
+    
+    function calcBudgetTotal() {
+        let weekly = 0;
+        for(let i=0; i<7; i++) {
+            weekly += parseCurrency(document.getElementById(`bg_${i}`).value);
+        }
+        document.getElementById("weeklyBudgetTotal").innerText = formatMoney(weekly) + "원";
+        // 월 평균 주수 4.3주로 계산
+        document.getElementById("monthlyBudgetTotal").innerText = "약 " + formatMoney(Math.floor(weekly * 4.3)) + "원";
+    }
+    
     function closeBudgetModal(e) { if(e.target.id==="budgetOverlay") document.getElementById("budgetOverlay").classList.remove("active"); }
     function saveBudgets() {
         for(let i=0; i<7; i++) {
-            // 콤마 제거 후 저장
             budgets[i] = parseCurrency(document.getElementById(`bg_${i}`).value);
         }
         saveData();
@@ -638,7 +715,11 @@
             el.innerHTML = `<div class="day-num" style="color:${dayOfWeek===0?'var(--ios-red)':(dayOfWeek===6?'var(--ios-blue)':'black')}">${d}</div>`;
             
             let dailyExp = 0;
-            if(records[key]) records[key].forEach(r => { if(r.type==='expense') dailyExp+=r.amount; });
+            if(records[key]) records[key].forEach(r => { 
+                // 고정비는 달력 점 찍을 때도 예산 초과 계산에서 뺄지 말지 결정해야 함
+                // 보통 '절약' 관점에서는 고정비 제외하고 변동비만 체크하는 게 맞음
+                if(r.type==='expense' && r.nature !== 'fixed') dailyExp+=r.amount; 
+            });
             
             if(dailyExp > 0) {
                 let limit = budgets[dayOfWeek];
@@ -680,15 +761,26 @@
             let amountClass = 'amount-expense';
             let sign = '-';
             let catText = r.category;
-            let subText = "지출";
+            let metaHtml = "";
 
-            if(r.type === 'income') { amountClass='amount-income'; sign='+'; subText="수입"; catText="수입"; }
-            else if(r.type === 'saving') { amountClass='amount-saving'; sign='-'; subText="저축"; catText="저축"; }
+            if(r.type === 'income') { 
+                amountClass='amount-income'; sign='+'; catText="수입"; 
+            }
+            else if(r.type === 'saving') { 
+                amountClass='amount-saving'; sign='-'; catText="저축"; 
+            }
+            else {
+                // 지출
+                if(r.nature === 'fixed') metaHtml += `<span class="tag-fixed">고정비</span>`;
+                else metaHtml += `<span style="font-size:12px; color:#999;">변동비</span>`;
+            }
+
+            if(r.memo) metaHtml += ` <span class="tag-memo">"${r.memo}"</span>`;
             
             div.innerHTML = `
-                <div>
+                <div class="record-info">
                     <div class="record-cat">${catText}</div>
-                    <div class="record-sub">${subText}</div>
+                    <div class="record-meta">${metaHtml}</div>
                 </div>
                 <div class="${amountClass}">${sign}${formatMoney(r.amount)}원</div>
             `;
