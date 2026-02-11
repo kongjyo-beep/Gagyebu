@@ -1,1 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>요일별 예산</title>
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+input {
+  padding: 8px;
+  margin: 5px;
+  width: 60%;
+}
+button {
+  padding: 10px;
+  margin: 5px;
+}
+</style>
+</head>
+<body>
 
+<h2>요일별 예산 설정</h2>
+
+<div id="budgetInputs"></div>
+
+<button onclick="saveBudget()">저장</button>
+<button onclick="history.back()">뒤로가기</button>
+
+<script>
+const days = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"];
+
+const container = document.getElementById("budgetInputs");
+
+days.forEach(day => {
+  container.innerHTML += `
+    <div>
+      <label>${day}</label><br>
+      <input type="number" id="${day}" placeholder="예산 입력"><br>
+    </div>
+  `;
+});
+
+function saveBudget() {
+  let budget = {};
+  days.forEach(day => {
+    budget[day] = document.getElementById(day).value;
+  });
+  localStorage.setItem("budget", JSON.stringify(budget));
+  alert("저장 완료");
+  history.back();
+}
+</script>
+
+</body>
+</html>
