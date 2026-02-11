@@ -2,8 +2,14 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>아이폰 가계부 v5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>아이폰 가계부</title>
+<meta name="apple-mobile-web-app-title" content="내 가계부">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="shortcut icon" href="icon.png">
 <style>
     :root {
         --ios-bg: #F2F2F7;
@@ -20,19 +26,23 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: var(--ios-bg);
         margin: 0; padding: 0; color: var(--ios-black);
-        -webkit-font-smoothing: antialiased; user-select: none; padding-bottom: 50px;
+        -webkit-font-smoothing: antialiased; user-select: none; 
+        /* 풀스크린 시 하단 안전영역 확보 */
+        padding-bottom: env(safe-area-inset-bottom);
     }
 
     /* --- 헤더 --- */
     .header-card {
-        background: var(--ios-card); padding: 20px;
+        background: var(--ios-card); 
+        /* 상단 상태바 안전영역 확보 */
+        padding: calc(env(safe-area-inset-top) + 20px) 20px 20px 20px;
         border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 20px; position: relative;
     }
 
-    /* 심플한 설정 버튼 (SVG) */
+    /* 심플한 설정 버튼 (SVG) - 위치 조정 */
     .settings-btn {
-        position: absolute; top: 20px; right: 20px;
+        position: absolute; top: calc(env(safe-area-inset-top) + 20px); right: 20px;
         background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6;
     }
     .settings-btn svg { width: 22px; height: 22px; fill: var(--ios-gray-text); }
@@ -331,8 +341,6 @@
 <script>
     // --- 초기 데이터 로드 ---
     let balance = parseInt(localStorage.getItem("balance")) || 0;
-    // v5 변경: savings는 이제 '기초 잔액(initialSavings)'과 구분합니다. 
-    // 하위 호환성을 위해 기존 savings 값을 initialSavings로 간주합니다.
     let initialSavings = parseInt(localStorage.getItem("initialSavings"));
     if (isNaN(initialSavings)) {
         initialSavings = parseInt(localStorage.getItem("savings")) || 0;
@@ -367,7 +375,6 @@
         } else {
             input.value = "";
         }
-        // 예산 입력창일 경우 합계 재계산 트리거
         if(input.id.startsWith('bg_')) calcBudgetTotal();
     }
     
@@ -402,14 +409,14 @@
 
     // --- 롱프레스 기능 ---
     function setupLongPress() {
-        // 저축 통장 (전용 모달 열기)
+        // 저축 통장
         addLongPressEvent(document.getElementById("boxSavings"), () => {
             document.getElementById("initialSavingsOverlay").classList.add("active");
             document.getElementById("initialSavingsInput").value = initialSavings.toLocaleString();
             document.getElementById("initialSavingsInput").focus();
         });
 
-        // 아낀 돈 (기준일 설정)
+        // 아낀 돈
         addLongPressEvent(document.getElementById("boxSavingGoal"), () => {
             let newPayday = prompt("이번 달 아낀 돈 계산 기준일(월급날)을 입력하세요 (1~31)", payday);
             if(newPayday !== null) {
@@ -448,7 +455,7 @@
     function updateDashboard() {
         document.getElementById("balanceDisplay").innerText = formatMoney(balance) + "원";
         
-        // 저축 총액 = 기초 잔액 + 기록된 모든 저축 내역 합계
+        // 저축 총액 = 기초 잔액 + 기록된 저축 합계
         let totalRecordedSavings = 0;
         Object.values(records).flat().forEach(r => {
             if(r.type === 'saving') totalRecordedSavings += r.amount;
@@ -475,7 +482,6 @@
             let dailyVariableExpense = 0;
             if(records[key]){
                 records[key].forEach(r => {
-                    // 고정비(fixed)가 아닌 경우에만 예산 차감
                     if(r.type === 'expense' && r.nature !== 'fixed') {
                         dailyVariableExpense += r.amount;
                     }
@@ -584,7 +590,7 @@
         let amount = parseCurrency(document.getElementById("inputAmount").value);
         let memo = document.getElementById("inputMemo").value;
         let category = "-";
-        let nature = "variable"; // 기본 변동비
+        let nature = "variable";
 
         if(!dateVal || amount === 0) { alert("날짜와 금액을 확인하세요."); return; }
 
@@ -600,7 +606,6 @@
 
         if(isEditing) {
             let oldR = records[targetKey][targetIndex];
-            // 잔고 복구 로직
             if(oldR.type === 'income') balance -= oldR.amount;
             else if(oldR.type === 'saving') balance += oldR.amount; 
             else balance += oldR.amount; 
@@ -612,7 +617,6 @@
         if(!records[dateVal]) records[dateVal] = [];
         records[dateVal].push({ type, amount, category, memo, nature });
 
-        // 새 데이터 잔고 반영 (저축도 잔고에선 빠짐, 고정비도 잔고에선 빠짐)
         if(type === 'income') balance += amount;
         else balance -= amount; 
 
@@ -672,7 +676,6 @@
             weekly += parseCurrency(document.getElementById(`bg_${i}`).value);
         }
         document.getElementById("weeklyBudgetTotal").innerText = formatMoney(weekly) + "원";
-        // 월 평균 주수 4.3주로 계산
         document.getElementById("monthlyBudgetTotal").innerText = "약 " + formatMoney(Math.floor(weekly * 4.3)) + "원";
     }
     
@@ -716,8 +719,6 @@
             
             let dailyExp = 0;
             if(records[key]) records[key].forEach(r => { 
-                // 고정비는 달력 점 찍을 때도 예산 초과 계산에서 뺄지 말지 결정해야 함
-                // 보통 '절약' 관점에서는 고정비 제외하고 변동비만 체크하는 게 맞음
                 if(r.type==='expense' && r.nature !== 'fixed') dailyExp+=r.amount; 
             });
             
@@ -770,7 +771,6 @@
                 amountClass='amount-saving'; sign='-'; catText="저축"; 
             }
             else {
-                // 지출
                 if(r.nature === 'fixed') metaHtml += `<span class="tag-fixed">고정비</span>`;
                 else metaHtml += `<span style="font-size:12px; color:#999;">변동비</span>`;
             }
