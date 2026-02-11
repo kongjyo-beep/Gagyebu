@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>아이폰 가계부 Pro Max</title>
+<title>아이폰 가계부 Final</title>
 <style>
     :root {
         --ios-bg: #F2F2F7;
@@ -11,7 +11,6 @@
         --ios-blue: #007AFF;
         --ios-red: #FF3B30;
         --ios-green: #34C759;
-        --ios-yellow: #FFCC00;
         --ios-gray-text: #8E8E93;
         --ios-border: #E5E5EA;
         --ios-black: #000000;
@@ -20,43 +19,34 @@
     body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: var(--ios-bg);
-        margin: 0;
-        padding: 0;
-        color: var(--ios-black);
-        -webkit-font-smoothing: antialiased;
-        user-select: none; 
-        padding-bottom: 50px;
+        margin: 0; padding: 0; color: var(--ios-black);
+        -webkit-font-smoothing: antialiased; user-select: none; padding-bottom: 50px;
     }
 
-    /* --- 상단 대시보드 --- */
+    /* --- 헤더 --- */
     .header-card {
-        background: var(--ios-card);
-        padding: 20px;
-        border-bottom-left-radius: 24px;
-        border-bottom-right-radius: 24px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        margin-bottom: 20px;
+        background: var(--ios-card); padding: 20px;
+        border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 20px; position: relative;
     }
 
-    .main-balance { text-align: center; margin-bottom: 25px; }
+    /* 설정 버튼 */
+    .settings-btn {
+        position: absolute; top: 20px; right: 20px;
+        background: none; border: none; font-size: 22px; cursor: pointer; color: var(--ios-blue);
+    }
+
+    .main-balance { text-align: center; margin-bottom: 25px; margin-top: 10px; }
     .header-label { font-size: 14px; color: var(--ios-gray-text); margin-bottom: 6px; }
     .balance-amount { font-size: 38px; font-weight: 700; letter-spacing: -0.5px; }
 
-    /* 서브 정보 그리드 */
-    .sub-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 25px;
-    }
-    
+    /* 서브 정보 */
+    .sub-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
     .info-box {
-        background: #F9F9F9;
-        border-radius: 18px;
-        padding: 15px;
-        text-align: center;
-        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03);
+        background: #F9F9F9; border-radius: 18px; padding: 15px; text-align: center;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03); transition: transform 0.1s; cursor: pointer;
     }
+    .info-box:active { transform: scale(0.96); background: #f0f0f0; }
     .info-title { font-size: 12px; color: #888; margin-bottom: 6px; font-weight: 500; }
     .info-value { font-size: 17px; font-weight: 700; }
     
@@ -76,17 +66,15 @@
     .btn-income { background: var(--ios-green); box-shadow: 0 2px 6px rgba(52,199,89,0.2); }
     .btn-budget { background: white; color: var(--ios-blue); border: 1px solid var(--ios-blue); box-shadow: none; }
 
-    /* --- 공통 모달/폼 --- */
+    /* --- 모달/폼 --- */
     .modal-overlay {
         position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.4);
-        display: none; z-index: 1000;
-        align-items: center; justify-content: center;
-        backdrop-filter: blur(2px);
+        background: rgba(0,0,0,0.4); display: none; z-index: 1000;
+        align-items: center; justify-content: center; backdrop-filter: blur(2px);
     }
     .modal-overlay.active { display: flex; }
 
-    .input-group, .budget-modal {
+    .input-group {
         background: white; width: 85%; max-width: 360px;
         padding: 24px; border-radius: 24px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.2);
@@ -102,6 +90,8 @@
         font-size: 16px; background: #F2F2F7; -webkit-appearance: none;
     }
     input:focus, select:focus { background: white; border-color: var(--ios-blue); outline: none; }
+    
+    .hidden { display: none; }
 
     /* --- 달력 --- */
     .calendar-container {
@@ -124,7 +114,7 @@
     .day-num { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
     .status-dot { width: 5px; height: 5px; border-radius: 50%; }
     .dot-green { background-color: var(--ios-green); }
-    .dot-yellow { background-color: var(--ios-yellow); }
+    .dot-yellow { background-color: #FFCC00; }
     .dot-red { background-color: var(--ios-red); }
     
     .sun { color: var(--ios-red); } .sat { color: var(--ios-blue); }
@@ -144,7 +134,7 @@
     .amount-income { color: var(--ios-green); font-weight:600; font-size: 16px; }
     .amount-saving { color: var(--ios-blue); font-weight:600; font-size: 16px; }
 
-    /* --- 액션 시트 (삭제/수정 메뉴) --- */
+    /* --- 액션 시트 --- */
     .action-sheet-overlay {
         position: fixed; top:0; left:0; right:0; bottom:0;
         background: rgba(0,0,0,0.5); z-index: 2000;
@@ -166,26 +156,27 @@
     .sheet-btn:last-child { border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; margin-bottom: 8px; }
     .sheet-cancel { border-radius: 14px; font-weight: 600; background: white; }
     .sheet-delete { color: var(--ios-red); }
-    .hidden { display: none; }
-    
+
 </style>
 </head>
 <body>
 
 <div class="header-card">
+    <button class="settings-btn" onclick="openSettings()">⚙️</button>
     <div class="main-balance">
         <div class="header-label">현재 잔고</div>
         <div class="balance-amount" id="balanceDisplay">0원</div>
     </div>
 
     <div class="sub-info-grid">
-        <div class="info-box">
+        <div class="info-box" id="boxSavings">
             <div class="info-title">💰 저축 통장</div>
             <div class="info-value val-saving" id="savingsDisplay">0원</div>
         </div>
-        <div class="info-box">
+        <div class="info-box" id="boxSavingGoal">
             <div class="info-title">👍 이번 달 아낀 돈</div>
             <div class="info-value" id="accumulatedSaveDisplay">0원</div>
+            <div style="font-size:10px; color:#aaa; margin-top:2px;" id="paydayLabel">매월 1일 기준</div>
         </div>
     </div>
 
@@ -230,7 +221,7 @@
 
         <div class="form-row">
             <label class="form-label">금액</label>
-            <input type="number" id="inputAmount" placeholder="0" inputmode="numeric">
+            <input type="text" id="inputAmount" placeholder="0" inputmode="numeric" onkeyup="formatCurrencyInput(this)">
         </div>
 
         <button class="btn-main" style="width:100%" onclick="saveRecord()">저장하기</button>
@@ -238,19 +229,30 @@
 </div>
 
 <div class="modal-overlay" id="budgetOverlay" onclick="closeBudgetModal(event)">
-    <div class="budget-modal">
+    <div class="input-group">
         <h3 style="margin:0 0 10px 0;">요일별 예산</h3>
         <p style="font-size:13px; color:#888; margin-bottom:20px;">일요일부터 토요일까지 하루 예산을 설정하세요.</p>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div><label class="form-label" style="color:red">일요일</label><input type="number" id="bg_0"></div>
-            <div><label class="form-label">월요일</label><input type="number" id="bg_1"></div>
-            <div><label class="form-label">화요일</label><input type="number" id="bg_2"></div>
-            <div><label class="form-label">수요일</label><input type="number" id="bg_3"></div>
-            <div><label class="form-label">목요일</label><input type="number" id="bg_4"></div>
-            <div><label class="form-label">금요일</label><input type="number" id="bg_5"></div>
-            <div><label class="form-label" style="color:blue">토요일</label><input type="number" id="bg_6"></div>
+            <div><label class="form-label" style="color:red">일요일</label><input type="text" id="bg_0" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
+            <div><label class="form-label">월요일</label><input type="text" id="bg_1" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
+            <div><label class="form-label">화요일</label><input type="text" id="bg_2" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
+            <div><label class="form-label">수요일</label><input type="text" id="bg_3" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
+            <div><label class="form-label">목요일</label><input type="text" id="bg_4" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
+            <div><label class="form-label">금요일</label><input type="text" id="bg_5" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
+            <div><label class="form-label" style="color:blue">토요일</label><input type="text" id="bg_6" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
         </div>
         <button class="btn-main" style="width:100%; margin-top:20px;" onclick="saveBudgets()">저장</button>
+    </div>
+</div>
+
+<div class="action-sheet-overlay" id="settingsSheet" onclick="closeSettings(event)">
+    <div class="action-sheet">
+        <div style="border-radius:14px; overflow:hidden; margin-bottom:8px;">
+            <button class="sheet-btn" style="color:black; font-weight:600;">환경 설정</button>
+            <div style="height:1px; background:#E5E5EA;"></div>
+            <button class="sheet-btn sheet-delete" onclick="resetAllData()">⚠️ 데이터 전체 초기화</button>
+        </div>
+        <button class="sheet-btn sheet-cancel" onclick="closeSettingsReal()">닫기</button>
     </div>
 </div>
 
@@ -284,29 +286,47 @@
 </div>
 
 <script>
-    // --- 데이터 로드 ---
+    // --- 초기 데이터 로드 ---
     let balance = parseInt(localStorage.getItem("balance")) || 0;
-    let savings = parseInt(localStorage.getItem("savings")) || 0; 
+    let savings = parseInt(localStorage.getItem("savings")) || 0;
+    let payday = parseInt(localStorage.getItem("payday")) || 1; // 월급날 (기본 1일)
     let records = JSON.parse(localStorage.getItem("records")) || {};
     let budgets = JSON.parse(localStorage.getItem("dailyBudgets")) || [50000, 30000, 30000, 30000, 30000, 30000, 50000];
-    
+
     let currentDate = new Date();
     let selectedDate = new Date();
     
-    // 수정/삭제 임시 변수
+    // 편집용 임시 변수
     let targetKey = null;
     let targetIndex = null;
     let isEditing = false;
 
-    // 초기 실행
+    // --- 초기 실행 ---
     document.addEventListener("DOMContentLoaded", () => {
+        setupLongPress();
         updateDashboard();
         renderCalendar();
         showRecordsForDate(new Date());
     });
 
-    // --- 유틸리티 ---
+    // --- 유틸리티: 콤마 포맷팅 ---
     function formatMoney(num) { return num.toLocaleString(); }
+    
+    // 입력 필드에서 실시간 콤마 적용
+    function formatCurrencyInput(input) {
+        let value = input.value.replace(/[^0-9]/g, ''); // 숫자 빼고 제거
+        if (value) {
+            input.value = parseInt(value).toLocaleString();
+        } else {
+            input.value = "";
+        }
+    }
+    
+    // 콤마 제거하고 숫자로 변환
+    function parseCurrency(str) {
+        return parseInt(str.replace(/,/g, '')) || 0;
+    }
+
     function getDateKey(dateObj) {
         const offset = dateObj.getTimezoneOffset() * 60000;
         return (new Date(dateObj - offset)).toISOString().slice(0, 10);
@@ -315,32 +335,95 @@
     function saveData() {
         localStorage.setItem("balance", balance);
         localStorage.setItem("savings", savings);
+        localStorage.setItem("payday", payday);
         localStorage.setItem("records", JSON.stringify(records));
         localStorage.setItem("dailyBudgets", JSON.stringify(budgets));
         updateDashboard();
         renderCalendar();
     }
 
-    // --- 핵심 로직: 대시보드 업데이트 ---
+    // --- 설정 & 초기화 ---
+    function openSettings() { document.getElementById("settingsSheet").classList.add("active"); }
+    function closeSettings(e) { if(e.target.id === "settingsSheet") closeSettingsReal(); }
+    function closeSettingsReal() { document.getElementById("settingsSheet").classList.remove("active"); }
+    
+    function resetAllData() {
+        if(confirm("정말 모든 데이터를 초기화하시겠습니까? 복구할 수 없습니다.")) {
+            localStorage.clear();
+            alert("초기화되었습니다.");
+            location.reload();
+        }
+    }
+
+    // --- 롱프레스 기능 (월급날 & 저축수정) ---
+    function setupLongPress() {
+        // 저축 통장 롱프레스
+        addLongPressEvent(document.getElementById("boxSavings"), () => {
+            let newVal = prompt("저축 통장의 실제 잔액을 입력하세요 (숫자만)", savings);
+            if(newVal !== null) {
+                let parsed = parseInt(newVal);
+                if(!isNaN(parsed)) {
+                    savings = parsed;
+                    saveData();
+                    alert("저축 잔액이 수정되었습니다.");
+                }
+            }
+        });
+
+        // 아낀 돈(월급날) 롱프레스
+        addLongPressEvent(document.getElementById("boxSavingGoal"), () => {
+            let newPayday = prompt("월급날(기준일)을 입력하세요 (1~31)", payday);
+            if(newPayday !== null) {
+                let parsed = parseInt(newPayday);
+                if(parsed >= 1 && parsed <= 31) {
+                    payday = parsed;
+                    saveData();
+                    alert(`기준일이 매월 ${payday}일로 변경되었습니다.`);
+                } else {
+                    alert("1에서 31 사이의 숫자를 입력해주세요.");
+                }
+            }
+        });
+    }
+
+    function addLongPressEvent(el, callback) {
+        let timer;
+        el.addEventListener('touchstart', () => { timer = setTimeout(() => { if(navigator.vibrate) navigator.vibrate(50); callback(); }, 800); });
+        el.addEventListener('touchend', () => clearTimeout(timer));
+        el.addEventListener('mousedown', () => { timer = setTimeout(callback, 800); });
+        el.addEventListener('mouseup', () => clearTimeout(timer));
+    }
+
+
+    // --- 대시보드 업데이트 (월급날 로직 적용) ---
     function updateDashboard() {
         document.getElementById("balanceDisplay").innerText = formatMoney(balance) + "원";
         document.getElementById("savingsDisplay").innerText = formatMoney(savings) + "원";
-        
-        // **누적 아낀 돈 계산 (1일 ~ 오늘)**
-        let today = new Date();
-        let currentYear = today.getFullYear();
-        let currentMonth = today.getMonth();
-        let todayDate = today.getDate();
-        
-        let accumulatedSaved = 0;
+        document.getElementById("paydayLabel").innerText = `매월 ${payday}일 기준`;
 
-        for(let d=1; d<=todayDate; d++){
-            let dateObj = new Date(currentYear, currentMonth, d);
-            let key = getDateKey(dateObj);
-            let dayOfWeek = dateObj.getDay(); // 0~6
+        // 월급날 기준 기간 계산
+        let today = new Date();
+        // 오늘 날짜가 월급날보다 작으면(이전이면), 시작일은 저번달 월급날
+        // 오늘 날짜가 월급날보다 크거나 같으면, 시작일은 이번달 월급날
+        
+        let startYear = today.getFullYear();
+        let startMonth = today.getMonth(); // 0-11
+        
+        if (today.getDate() < payday) {
+            startMonth = startMonth - 1; // 지난달
+        }
+        
+        // 날짜 루프: 시작일 ~ 어제까지 (오늘은 아직 안 끝났지만 실시간 반영을 원하면 오늘 포함)
+        // 여기선 "오늘"까지 포함해서 계산
+        let accumulatedSaved = 0;
+        let loopDate = new Date(startYear, startMonth, payday);
+        
+        // 무한루프 방지 및 오늘까지만 계산
+        while(loopDate <= today) {
+            let key = getDateKey(loopDate);
+            let dayOfWeek = loopDate.getDay();
             let dailyBudget = budgets[dayOfWeek];
             
-            // 해당 날짜의 '지출(expense)'만 합산 (저축,수입 제외)
             let dailyExpense = 0;
             if(records[key]){
                 records[key].forEach(r => {
@@ -348,9 +431,11 @@
                 });
             }
             
-            // 예산 - 지출 = 아낀 돈 (마이너스면 오버한 돈)
-            // 이것을 누적해서 더함
+            // 미래 예산은 미리 땡겨오지 않음. (오늘이 loopDate보다 크거나 같을때만)
             accumulatedSaved += (dailyBudget - dailyExpense);
+            
+            // 하루 증가
+            loopDate.setDate(loopDate.getDate() + 1);
         }
 
         let saveEl = document.getElementById("accumulatedSaveDisplay");
@@ -369,10 +454,11 @@
         const typeSelect = document.getElementById("inputType");
         const catRow = document.getElementById("categoryRow");
 
-        if(record) { // 수정 모드
+        if(record) { // 수정
             document.getElementById("formTitle").innerText = "내역 수정";
             document.getElementById("inputDate").value = targetKey;
-            document.getElementById("inputAmount").value = record.amount;
+            // 콤마 적용해서 값 넣기
+            document.getElementById("inputAmount").value = record.amount.toLocaleString();
             
             typeSelect.innerHTML = `<option value="expense">지출</option><option value="saving">저축</option><option value="income">수입</option>`;
             typeSelect.value = record.type;
@@ -391,7 +477,7 @@
             } else {
                 catRow.classList.add("hidden");
             }
-        } else { // 신규 모드
+        } else { // 신규
             isEditing = false;
             document.getElementById("formTitle").innerText = "내역 추가";
             document.getElementById("inputDate").valueAsDate = selectedDate;
@@ -431,10 +517,11 @@
     function saveRecord() {
         let dateVal = document.getElementById("inputDate").value;
         let type = document.getElementById("inputType").value;
-        let amount = parseInt(document.getElementById("inputAmount").value);
+        // 콤마 제거 후 파싱
+        let amount = parseCurrency(document.getElementById("inputAmount").value);
         let category = "-";
 
-        if(!dateVal || isNaN(amount)) { alert("날짜와 금액을 확인하세요."); return; }
+        if(!dateVal || amount === 0) { alert("날짜와 금액을 확인하세요."); return; }
 
         if(type === 'expense') {
             let catSelect = document.getElementById("inputCategory").value;
@@ -445,7 +532,6 @@
             category = "수입";
         }
 
-        // 수정 시: 롤백 처리
         if(isEditing) {
             let oldR = records[targetKey][targetIndex];
             if(oldR.type === 'income') balance -= oldR.amount;
@@ -456,11 +542,9 @@
             if(records[targetKey].length === 0) delete records[targetKey];
         }
 
-        // 저장
         if(!records[dateVal]) records[dateVal] = [];
         records[dateVal].push({ type, amount, category });
 
-        // 재정 반영
         if(type === 'income') balance += amount;
         else if(type === 'saving') { balance -= amount; savings += amount; }
         else balance -= amount; 
@@ -509,13 +593,20 @@
     // --- 예산 설정 ---
     function openBudgetModal() {
         document.getElementById("budgetOverlay").classList.add("active");
-        for(let i=0; i<7; i++) document.getElementById(`bg_${i}`).value = budgets[i];
+        for(let i=0; i<7; i++) {
+            // 콤마 넣어서 보여주기
+            document.getElementById(`bg_${i}`).value = budgets[i].toLocaleString();
+        }
     }
     function closeBudgetModal(e) { if(e.target.id==="budgetOverlay") document.getElementById("budgetOverlay").classList.remove("active"); }
     function saveBudgets() {
-        for(let i=0; i<7; i++) budgets[i] = parseInt(document.getElementById(`bg_${i}`).value) || 0;
+        for(let i=0; i<7; i++) {
+            // 콤마 제거 후 저장
+            budgets[i] = parseCurrency(document.getElementById(`bg_${i}`).value);
+        }
         saveData();
         document.getElementById("budgetOverlay").classList.remove("active");
+        alert("예산이 저장되었습니다.");
     }
 
     // --- 달력 UI ---
@@ -549,7 +640,6 @@
             let dailyExp = 0;
             if(records[key]) records[key].forEach(r => { if(r.type==='expense') dailyExp+=r.amount; });
             
-            // 점(Dot) 찍기 로직
             if(dailyExp > 0) {
                 let limit = budgets[dayOfWeek];
                 let dot = document.createElement("div");
@@ -603,18 +693,7 @@
                 <div class="${amountClass}">${sign}${formatMoney(r.amount)}원</div>
             `;
             
-            // Long Press
-            let pressTimer;
-            div.addEventListener('touchstart', (e) => {
-                pressTimer = setTimeout(() => {
-                    if(navigator.vibrate) navigator.vibrate(50);
-                    openActionSheet(key, idx, r);
-                }, 600);
-            });
-            div.addEventListener('touchend', () => clearTimeout(pressTimer));
-            div.addEventListener('touchmove', () => clearTimeout(pressTimer));
-            div.addEventListener('mousedown', () => pressTimer = setTimeout(()=>openActionSheet(key,idx,r), 600));
-            div.addEventListener('mouseup', () => clearTimeout(pressTimer));
+            addLongPressEvent(div, () => openActionSheet(key, idx, r));
             
             list.appendChild(div);
         });
