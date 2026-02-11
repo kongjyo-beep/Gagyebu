@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>아이폰 가계부</title>
+<title>아이폰 가계부 Pro</title>
 <style>
     :root {
         --ios-bg: #F2F2F7;
@@ -24,6 +24,7 @@
         padding: 0;
         color: var(--ios-black);
         -webkit-font-smoothing: antialiased;
+        user-select: none; /* 텍스트 선택 방지 (앱 느낌) */
     }
 
     /* 상단 잔액 카드 */
@@ -43,7 +44,7 @@
     .action-row {
         display: flex;
         justify-content: center;
-        gap: 15px;
+        gap: 10px;
         margin-top: 20px;
     }
 
@@ -51,15 +52,59 @@
         background: var(--ios-blue);
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 20px;
+        padding: 12px 20px;
+        border-radius: 12px;
         font-size: 15px;
         font-weight: 600;
         cursor: pointer;
-        transition: opacity 0.2s;
+        transition: transform 0.1s, opacity 0.2s;
+        flex: 1;
+        max-width: 100px;
     }
-    .btn-main:active { opacity: 0.7; }
-    .btn-secondary { background: #e5e5ea; color: black; }
+    .btn-main:active { transform: scale(0.98); opacity: 0.8; }
+    .btn-income { background: var(--ios-green); }
+    .btn-budget { background: var(--ios-card); color: var(--ios-blue); border: 1px solid var(--ios-blue); }
+
+    /* 공통 폼 스타일 */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4);
+        display: none; z-index: 1000;
+        align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .input-group, .budget-modal {
+        background: white;
+        width: 90%;
+        max-width: 400px;
+        padding: 24px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: none;
+        box-sizing: border-box;
+    }
+    .input-group.active { display: block; }
+
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .form-row { margin-bottom: 16px; }
+    .form-label { font-size: 12px; color: var(--ios-gray-text); margin-bottom: 4px; display: block; }
+    
+    input, select {
+        width: 100%; box-sizing: border-box;
+        padding: 14px; border-radius: 12px;
+        border: 1px solid #E5E5EA; font-size: 16px;
+        -webkit-appearance: none; background: #F9F9F9;
+        color: var(--ios-black);
+    }
+    input:focus, select:focus { outline: none; border-color: var(--ios-blue); background: white; }
+
+    .hidden { display: none; }
 
     /* 달력 영역 */
     .calendar-container {
@@ -71,130 +116,74 @@
     }
 
     .cal-nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
     }
-    .cal-title { font-size: 20px; font-weight: 700; }
-    .nav-btn {
-        background: none; border: none; font-size: 18px; color: var(--ios-blue); cursor: pointer;
-        padding: 5px 10px;
-    }
+    .cal-title { font-size: 18px; font-weight: 700; }
+    .nav-btn { background: none; border: none; font-size: 16px; color: var(--ios-blue); padding: 5px; }
 
     .weekdays {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        text-align: center;
-        font-size: 12px;
-        color: var(--ios-gray-text);
-        margin-bottom: 10px;
-        font-weight: 600;
+        display: grid; grid-template-columns: repeat(7, 1fr);
+        text-align: center; font-size: 12px; color: var(--ios-gray-text);
+        margin-bottom: 8px; font-weight: 600;
     }
 
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 2px; /* 간격 줄임 */
-    }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 
     .day-cell {
-        height: 55px; /* 높이 고정 */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        padding-top: 5px;
-        cursor: pointer;
-        border-radius: 8px;
-        position: relative;
+        height: 52px;
+        display: flex; flex-direction: column; align-items: center; padding-top: 4px;
+        cursor: pointer; border-radius: 8px; position: relative;
     }
 
     .day-num {
-        font-size: 17px;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        margin-bottom: 4px;
+        font-size: 16px; width: 28px; height: 28px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; margin-bottom: 2px;
     }
 
-    /* 오늘 날짜 스타일 */
-    .day-cell.today .day-num {
-        background-color: var(--ios-blue);
-        color: white;
-        font-weight: 600;
-    }
-
-    /* 선택된 날짜 스타일 */
+    .day-cell.today .day-num { background-color: var(--ios-blue); color: white; font-weight: 600; }
     .day-cell.selected { background-color: #F2F2F7; }
 
-    /* 상태 점 (Dot) */
-    .status-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-    }
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 2px; }
     .dot-green { background-color: var(--ios-green); }
     .dot-yellow { background-color: var(--ios-yellow); }
     .dot-red { background-color: var(--ios-red); }
 
-    /* 일요일/토요일 색상 */
     .sun { color: var(--ios-red); }
     .sat { color: var(--ios-blue); }
-    .other-month { opacity: 0.3; }
 
-    /* 하단 리스트 영역 */
-    .detail-section {
-        margin: 20px 16px;
-    }
-    .list-header {
-        font-size: 13px; color: var(--ios-gray-text); margin-bottom: 8px; margin-left: 10px;
-    }
-    .record-list {
-        background: var(--ios-card);
-        border-radius: 12px;
-        overflow: hidden;
-    }
+    /* 리스트 영역 */
+    .detail-section { margin: 24px 16px 40px 16px; }
+    .list-header { font-size: 13px; color: var(--ios-gray-text); margin-bottom: 8px; margin-left: 10px; }
+    
+    .record-list { background: var(--ios-card); border-radius: 12px; overflow: hidden; }
+    
     .record-item {
-        padding: 15px;
+        padding: 16px;
         border-bottom: 1px solid var(--ios-border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        display: flex; justify-content: space-between; align-items: center;
+        transition: background 0.2s;
     }
+    .record-item:active { background: #f0f0f0; }
     .record-item:last-child { border-bottom: none; }
-    .record-info { display: flex; flex-direction: column; }
-    .record-cat { font-size: 15px; font-weight: 500; }
-    .record-amount { font-size: 15px; font-weight: 600; }
+    
+    .record-info { display: flex; flex-direction: column; gap: 2px; }
+    .record-cat { font-size: 16px; font-weight: 500; }
+    .record-desc { font-size: 12px; color: #999; }
+    .record-amount { font-size: 16px; font-weight: 600; }
     .amount-expense { color: var(--ios-black); }
-    .amount-income { color: var(--ios-blue); }
+    .amount-income { color: var(--ios-green); }
 
-    /* 입력 폼 (간단한 스타일) */
-    .input-group {
-        background: white;
-        margin: 16px;
-        padding: 20px;
-        border-radius: 16px;
-        display: none; /* 평소엔 숨김 */
+    /* 팝업 닫기 버튼 */
+    .close-btn {
+        background: #E5E5EA; color: black; border: none; padding: 12px; 
+        border-radius: 12px; font-weight: 600; margin-top: 10px; width: 100%;
     }
-    .input-group.active { display: block; }
-    
-    .form-row { margin-bottom: 12px; }
-    input, select {
-        width: 100%; box-sizing: border-box;
-        padding: 12px; border-radius: 10px;
-        border: 1px solid #E5E5EA; font-size: 16px;
-        -webkit-appearance: none; background: white;
-    }
-    
-    .budget-status-legend {
-        display: flex; gap: 10px; justify-content: center; margin-top: 15px; font-size: 11px; color: #8e8e93;
-    }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
 
+    /* 예산 설정 모달 내부 */
+    .budget-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
 </style>
 </head>
 <body>
@@ -203,307 +192,425 @@
     <div class="header-title">현재 자산</div>
     <div class="balance-amount" id="balanceDisplay">0원</div>
     <div class="action-row">
-        <button class="btn-main" onclick="toggleForm()">+ 기록하기</button>
-        <button class="btn-main btn-secondary" onclick="addSalary()">월급 추가</button>
-        <button class="btn-main btn-secondary" onclick="setBudget()">예산 설정</button>
+        <button class="btn-main" onclick="openForm('expense')">지출 기록</button>
+        <button class="btn-main btn-income" onclick="openForm('income')">수입 기록</button>
+        <button class="btn-main btn-budget" onclick="openBudgetModal()">예산 설정</button>
     </div>
 </div>
 
-<div class="input-group" id="inputForm">
-    <h3 style="margin-top:0; font-size:18px;">새로운 내역 추가</h3>
-    <div class="form-row">
-        <select id="inputType">
-            <option value="expense">지출</option>
-            <option value="income">수입</option>
-            <option value="saving">저축</option>
-        </select>
+<div class="modal-overlay" id="formOverlay" onclick="closeForm(event)">
+    <div class="input-group" id="inputForm">
+        <h3 id="formTitle" style="margin:0 0 20px 0; font-size:20px; font-weight:700;">내역 추가</h3>
+        
+        <div class="form-row">
+            <label class="form-label">날짜</label>
+            <input type="date" id="inputDate">
+        </div>
+
+        <div class="form-row" id="typeRow">
+            <label class="form-label">유형</label>
+            <select id="inputType" onchange="handleTypeChange()">
+                <option value="expense">지출</option>
+                <option value="saving">저축</option>
+                <option value="income">수입</option>
+            </select>
+        </div>
+
+        <div class="form-row" id="categoryRow">
+            <label class="form-label">카테고리</label>
+            <select id="inputCategory" onchange="handleCategoryChange()">
+                <option value="식비">식비</option>
+                <option value="교통">교통</option>
+                <option value="쇼핑">쇼핑</option>
+                <option value="주거">주거/통신</option>
+                <option value="의료">의료/건강</option>
+                <option value="문화">문화/여가</option>
+                <option value="기타">기타 (직접입력)</option>
+            </select>
+            <input type="text" id="customCategory" class="hidden" placeholder="카테고리 이름 입력" style="margin-top:8px;">
+        </div>
+
+        <div class="form-row">
+            <label class="form-label">금액</label>
+            <input type="number" id="inputAmount" placeholder="0" inputmode="numeric">
+        </div>
+
+        <button class="btn-main" style="width:100%; margin-top:10px;" onclick="saveRecord()">저장하기</button>
+        <button class="close-btn" onclick="closeFormReal()">닫기</button>
     </div>
-    <div class="form-row">
-        <input type="date" id="inputDate">
+</div>
+
+<div class="modal-overlay" id="budgetOverlay" onclick="closeBudgetModal(event)">
+    <div class="budget-modal">
+        <h3 style="margin:0 0 20px 0;">요일별 예산 설정</h3>
+        <p style="font-size:12px; color:#888; margin-bottom:15px;">각 요일별 하루 예산을 설정하세요.</p>
+        <div class="budget-grid">
+            <div><label class="form-label">월요일</label><input type="number" id="bg_1"></div>
+            <div><label class="form-label">화요일</label><input type="number" id="bg_2"></div>
+            <div><label class="form-label">수요일</label><input type="number" id="bg_3"></div>
+            <div><label class="form-label">목요일</label><input type="number" id="bg_4"></div>
+            <div><label class="form-label">금요일</label><input type="number" id="bg_5"></div>
+            <div><label class="form-label">토요일</label><input type="number" id="bg_6"></div>
+            <div><label class="form-label" style="color:red">일요일</label><input type="number" id="bg_0"></div>
+        </div>
+        <button class="btn-main" style="width:100%; margin-top:20px;" onclick="saveBudgets()">예산 저장</button>
+        <button class="close-btn" onclick="closeBudgetModalReal()">닫기</button>
     </div>
-    <div class="form-row">
-        <select id="inputCategory">
-            <option value="식비">식비</option>
-            <option value="교통">교통</option>
-            <option value="쇼핑">쇼핑</option>
-            <option value="주거">주거/통신</option>
-            <option value="의료">의료/건강</option>
-            <option value="기타">기타</option>
-        </select>
-    </div>
-    <div class="form-row">
-        <input type="number" id="inputAmount" placeholder="금액 (원)">
-    </div>
-    <button class="btn-main" style="width:100%" onclick="saveRecord()">저장</button>
 </div>
 
 <div class="calendar-container">
     <div class="cal-nav">
-        <button class="nav-btn" onclick="changeMonth(-1)">◀ 10월</button>
-        <div class="cal-title" id="monthTitle">2026년 11월</div>
-        <button class="nav-btn" onclick="changeMonth(1)">12월 ▶</button>
+        <button class="nav-btn" onclick="changeMonth(-1)">◀ 이전</button>
+        <div class="cal-title" id="monthTitle">2026년 10월</div>
+        <button class="nav-btn" onclick="changeMonth(1)">다음 ▶</button>
     </div>
-
     <div class="weekdays">
         <div class="sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="sat">토</div>
     </div>
-    
-    <div class="calendar-grid" id="calendarGrid">
-        </div>
-
-    <div class="budget-status-legend">
-        <div class="legend-item"><div class="status-dot dot-red"></div>예산 초과</div>
-        <div class="legend-item"><div class="status-dot dot-yellow"></div>예산 딱 맞음</div>
-        <div class="legend-item"><div class="status-dot dot-green"></div>절약 성공</div>
-    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
 </div>
 
 <div class="detail-section">
     <div class="list-header" id="selectedDateTitle">오늘의 내역</div>
-    <div class="record-list" id="recordList">
-        <div style="padding:20px; text-align:center; color:#8e8e93;">내역이 없습니다.</div>
-    </div>
+    <p style="font-size:11px; color:#aaa; margin-left:10px; margin-top:0;">💡 내역을 길게 누르면 수정할 수 있어요.</p>
+    <div class="record-list" id="recordList"></div>
 </div>
 
 <script>
     // --- 데이터 관리 ---
     let balance = parseInt(localStorage.getItem("balance")) || 0;
     let records = JSON.parse(localStorage.getItem("records")) || {};
-    // 예산: 평일, 주말
-    let budgets = JSON.parse(localStorage.getItem("budgets")) || { weekday: 30000, weekend: 50000 };
+    
+    // 예산: 0(일) ~ 6(토) 배열로 관리. 기본값 3만원, 주말 5만원
+    let defaultBudgets = [50000, 30000, 30000, 30000, 30000, 30000, 50000];
+    let budgets = JSON.parse(localStorage.getItem("dailyBudgets")) || defaultBudgets;
     
     let currentDate = new Date();
-    let selectedDate = new Date(); // 현재 선택된 날짜
+    let selectedDate = new Date();
+    
+    // 수정 모드 관리 변수
+    let isEditing = false;
+    let editKey = null;
+    let editIndex = null;
 
-    // 초기화 실행
     document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("inputDate").valueAsDate = new Date();
         updateBalanceUI();
         renderCalendar();
         showRecordsForDate(new Date());
     });
 
-    // --- 유틸리티 함수 ---
-    function formatMoney(num) {
-        return num.toLocaleString();
+    // --- 유틸리티 ---
+    function formatMoney(num) { return num.toLocaleString(); }
+    function getDateKey(dateObj) {
+        const offset = dateObj.getTimezoneOffset() * 60000;
+        return (new Date(dateObj - offset)).toISOString().slice(0, 10);
     }
-
     function saveData() {
         localStorage.setItem("balance", balance);
         localStorage.setItem("records", JSON.stringify(records));
-        localStorage.setItem("budgets", JSON.stringify(budgets));
+        localStorage.setItem("dailyBudgets", JSON.stringify(budgets));
         updateBalanceUI();
         renderCalendar();
     }
-
-    // --- UI 업데이트 ---
     function updateBalanceUI() {
         document.getElementById("balanceDisplay").innerText = formatMoney(balance) + "원";
     }
 
-    function toggleForm() {
-        let form = document.getElementById("inputForm");
-        form.classList.toggle("active");
-        if(form.classList.contains("active")) {
-            // 폼 열 때 날짜는 선택된 날짜로 세팅
-            document.getElementById("inputDate").valueAsDate = selectedDate;
+    // --- 폼 UI 제어 ---
+    function openForm(mode, record = null) {
+        const overlay = document.getElementById("formOverlay");
+        const formDiv = document.getElementById("inputForm");
+        const typeSelect = document.getElementById("inputType");
+        const catRow = document.getElementById("categoryRow");
+        const dateInput = document.getElementById("inputDate");
+
+        overlay.classList.add("active");
+        formDiv.classList.add("active");
+
+        // 수정 모드일 때
+        if (record) {
+            document.getElementById("formTitle").innerText = "내역 수정";
+            dateInput.value = editKey; // YYYY-MM-DD
+            document.getElementById("inputAmount").value = record.amount;
+            
+            // 모든 옵션을 보이게 잠시 초기화 후 값 세팅
+            typeSelect.innerHTML = `
+                <option value="expense">지출</option>
+                <option value="saving">저축</option>
+                <option value="income">수입</option>
+            `;
+            typeSelect.value = record.type;
+            
+            if(record.type === 'expense') {
+                catRow.classList.remove("hidden");
+                // 커스텀 카테고리 체크
+                const basicCats = ["식비","교통","쇼핑","주거","의료","문화"];
+                if(basicCats.includes(record.category)){
+                    document.getElementById("inputCategory").value = record.category;
+                    document.getElementById("customCategory").classList.add("hidden");
+                } else {
+                    document.getElementById("inputCategory").value = "기타";
+                    document.getElementById("customCategory").classList.remove("hidden");
+                    document.getElementById("customCategory").value = record.category;
+                }
+            } else {
+                catRow.classList.add("hidden");
+            }
+        } 
+        // 신규 작성 모드일 때
+        else {
+            isEditing = false;
+            document.getElementById("formTitle").innerText = "내역 추가";
+            dateInput.valueAsDate = selectedDate; // 현재 선택된 날짜 자동 입력
+            document.getElementById("inputAmount").value = "";
+            document.getElementById("customCategory").value = "";
+            document.getElementById("customCategory").classList.add("hidden");
+            document.getElementById("inputCategory").value = "식비";
+
+            typeSelect.innerHTML = ""; // 옵션 초기화
+            if (mode === 'expense') {
+                // 지출 기록: 수입 제외
+                let opt1 = new Option("지출", "expense");
+                let opt2 = new Option("저축", "saving");
+                typeSelect.add(opt1);
+                typeSelect.add(opt2);
+                catRow.classList.remove("hidden");
+            } else if (mode === 'income') {
+                // 수입 기록: 수입 고정
+                let opt = new Option("수입", "income");
+                typeSelect.add(opt);
+                catRow.classList.add("hidden");
+            }
         }
     }
 
-    // --- 핵심 로직: 달력 그리기 ---
+    function handleTypeChange() {
+        const type = document.getElementById("inputType").value;
+        const catRow = document.getElementById("categoryRow");
+        if(type === 'expense') catRow.classList.remove("hidden");
+        else catRow.classList.add("hidden");
+    }
+
+    function handleCategoryChange() {
+        const cat = document.getElementById("inputCategory").value;
+        const customInput = document.getElementById("customCategory");
+        if(cat === "기타") {
+            customInput.classList.remove("hidden");
+            customInput.focus();
+        } else {
+            customInput.classList.add("hidden");
+        }
+    }
+
+    function closeForm(e) { if(e.target.id === "formOverlay") closeFormReal(); }
+    function closeFormReal() {
+        document.getElementById("formOverlay").classList.remove("active");
+        isEditing = false;
+        editKey = null;
+        editIndex = null;
+    }
+
+    // --- 예산 설정 모달 ---
+    function openBudgetModal() {
+        const overlay = document.getElementById("budgetOverlay");
+        const modal = document.querySelector(".budget-modal");
+        overlay.classList.add("active");
+        modal.style.display = "block";
+        
+        // 값 채워넣기
+        for(let i=0; i<7; i++) {
+            document.getElementById(`bg_${i}`).value = budgets[i];
+        }
+    }
+    function closeBudgetModal(e) { if(e.target.id === "budgetOverlay") closeBudgetModalReal(); }
+    function closeBudgetModalReal() {
+        document.getElementById("budgetOverlay").classList.remove("active");
+    }
+    function saveBudgets() {
+        for(let i=0; i<7; i++) {
+            let val = parseInt(document.getElementById(`bg_${i}`).value);
+            budgets[i] = isNaN(val) ? 0 : val;
+        }
+        saveData();
+        closeBudgetModalReal();
+        alert("요일별 예산이 저장되었습니다.");
+    }
+
+    // --- 저장 및 수정 로직 ---
+    function saveRecord() {
+        const dateVal = document.getElementById("inputDate").value;
+        const type = document.getElementById("inputType").value;
+        const amount = parseInt(document.getElementById("inputAmount").value);
+        let category = "-";
+
+        if (!dateVal || isNaN(amount)) { alert("날짜와 금액을 확인해주세요."); return; }
+
+        if (type === 'expense') {
+            const catSelect = document.getElementById("inputCategory").value;
+            if (catSelect === '기타') {
+                category = document.getElementById("customCategory").value || "기타";
+            } else {
+                category = catSelect;
+            }
+        } else if (type === 'saving') {
+            category = "저축";
+        } else {
+            category = "수입";
+        }
+
+        // 1. 기존 데이터가 있었다면 롤백(삭제) 후 다시 저장 (잔액 보정)
+        if (isEditing) {
+            let oldRecord = records[editKey][editIndex];
+            if (oldRecord.type === 'income') balance -= oldRecord.amount;
+            else balance += oldRecord.amount;
+            
+            // 배열에서 삭제
+            records[editKey].splice(editIndex, 1);
+            if(records[editKey].length === 0) delete records[editKey];
+        }
+
+        // 2. 새 데이터 저장
+        if (!records[dateVal]) records[dateVal] = [];
+        records[dateVal].push({ type, amount, category });
+
+        // 잔액 반영
+        if (type === 'income') balance += amount;
+        else balance -= amount;
+
+        saveData();
+        closeFormReal();
+
+        // 날짜 이동 및 갱신
+        selectedDate = new Date(dateVal);
+        changeMonth(0); // 달력 갱신용 (현재 달 유지하되 점 찍기 위해)
+        showRecordsForDate(selectedDate);
+    }
+
+    // --- 달력 렌더링 ---
     function renderCalendar() {
         const year = currentDate.getFullYear();
-        const month = currentDate.getMonth(); // 0~11
-        
+        const month = currentDate.getMonth();
         document.getElementById("monthTitle").innerText = `${year}년 ${month + 1}월`;
-        
-        // 이전/다음 달 버튼 텍스트 업데이트
-        const prevDate = new Date(year, month - 1, 1);
-        const nextDate = new Date(year, month + 1, 1);
-        document.querySelector(".cal-nav button:first-child").innerText = `◀ ${prevDate.getMonth()+1}월`;
-        document.querySelector(".cal-nav button:last-child").innerText = `${nextDate.getMonth()+1}월 ▶`;
 
         const grid = document.getElementById("calendarGrid");
         grid.innerHTML = "";
 
-        // 달의 첫 날 요일 & 마지막 날짜 구하기
         const firstDay = new Date(year, month, 1).getDay();
         const lastDate = new Date(year, month + 1, 0).getDate();
 
-        // 빈 칸 채우기 (지난달)
-        for(let i=0; i<firstDay; i++){
-            let emptyDiv = document.createElement("div");
-            grid.appendChild(emptyDiv);
-        }
+        for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement("div"));
 
-        // 날짜 채우기
-        for(let d=1; d<=lastDate; d++){
-            let currentDayObj = new Date(year, month, d);
-            let dateKey = getDateKey(currentDayObj);
-            let dayOfWeek = currentDayObj.getDay();
+        for (let d = 1; d <= lastDate; d++) {
+            let dateObj = new Date(year, month, d);
+            let key = getDateKey(dateObj);
+            let dayOfWeek = dateObj.getDay();
 
             let el = document.createElement("div");
             el.className = "day-cell";
-            
-            // 오늘 날짜 체크
-            let todayKey = getDateKey(new Date());
-            if(dateKey === todayKey) el.classList.add("today");
-            
-            // 선택된 날짜 체크
-            if(dateKey === getDateKey(selectedDate)) el.classList.add("selected");
+            if (key === getDateKey(new Date())) el.classList.add("today");
+            if (key === getDateKey(selectedDate)) el.classList.add("selected");
 
-            // 일/토 색상
-            let numSpan = document.createElement("div");
-            numSpan.className = "day-num";
-            numSpan.innerText = d;
-            if(dayOfWeek === 0) numSpan.style.color = "var(--ios-red)";
-            else if(dayOfWeek === 6) numSpan.style.color = "var(--ios-blue)";
-            
-            // 오늘 날짜면 글자색 흰색 (css overriding)
-            if(dateKey === todayKey) {
-                if(dayOfWeek === 0 || dayOfWeek === 6) numSpan.style.color = "white"; 
+            let num = document.createElement("div");
+            num.className = "day-num";
+            num.innerText = d;
+            if(dayOfWeek===0) num.style.color="var(--ios-red)";
+            if(dayOfWeek===6) num.style.color="var(--ios-blue)";
+            if(key === getDateKey(new Date()) && (dayOfWeek===0||dayOfWeek===6)) num.style.color="white";
+
+            el.appendChild(num);
+
+            // 점 찍기 로직
+            let dailyExpense = 0;
+            if (records[key]) {
+                records[key].forEach(r => { if (r.type === 'expense') dailyExpense += r.amount; });
             }
 
-            el.appendChild(numSpan);
-
-            // 지출 계산 및 점(Dot) 표시
-            let dailyTotal = 0;
-            if(records[dateKey]) {
-                records[dateKey].forEach(r => {
-                    if(r.type === 'expense') dailyTotal += r.amount;
-                });
-            }
-
-            if(dailyTotal > 0) {
-                let limit = (dayOfWeek === 0 || dayOfWeek === 6) ? budgets.weekend : budgets.weekday;
+            if (dailyExpense > 0) {
+                let limit = budgets[dayOfWeek]; // 요일별 예산 적용
                 let dot = document.createElement("div");
                 dot.className = "status-dot";
-                
-                if(dailyTotal > limit) dot.classList.add("dot-red"); // 초과
-                else if(dailyTotal === limit) dot.classList.add("dot-yellow"); // 일치
-                else dot.classList.add("dot-green"); // 세이브
-                
+                if (dailyExpense > limit) dot.classList.add("dot-red");
+                else if (dailyExpense === limit) dot.classList.add("dot-yellow");
+                else dot.classList.add("dot-green");
                 el.appendChild(dot);
             }
 
-            // 클릭 이벤트
             el.onclick = () => {
                 selectedDate = new Date(year, month, d);
+                renderCalendar();
                 showRecordsForDate(selectedDate);
-                renderCalendar(); // 선택 효과 갱신을 위해 재렌더링
-                // 입력폼 날짜도 동기화
-                document.getElementById("inputDate").valueAsDate = selectedDate;
             };
-
             grid.appendChild(el);
         }
     }
 
-    function changeMonth(delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
+    function changeMonth(n) {
+        currentDate.setMonth(currentDate.getMonth() + n);
         renderCalendar();
     }
 
-    function getDateKey(dateObj) {
-        // YYYY-MM-DD 포맷 (로컬 시간 기준 정확하게)
-        const offset = dateObj.getTimezoneOffset() * 60000;
-        const localISOTime = (new Date(dateObj - offset)).toISOString().slice(0, 10);
-        return localISOTime;
-    }
-
-    // --- 리스트 표시 기능 ---
+    // --- 리스트 및 수정(Long Press) ---
     function showRecordsForDate(dateObj) {
         let key = getDateKey(dateObj);
-        let listContainer = document.getElementById("recordList");
-        let title = document.getElementById("selectedDateTitle");
-        
-        // 날짜 타이틀 업데이트
         const days = ['일','월','화','수','목','금','토'];
-        title.innerText = `${dateObj.getMonth()+1}월 ${dateObj.getDate()}일 (${days[dateObj.getDay()]})`;
+        document.getElementById("selectedDateTitle").innerText = `${dateObj.getMonth()+1}월 ${dateObj.getDate()}일 (${days[dateObj.getDay()]})`;
 
-        let dayRecords = records[key] || [];
+        let list = document.getElementById("recordList");
+        list.innerHTML = "";
         
-        if(dayRecords.length === 0) {
-            listContainer.innerHTML = `<div style="padding:20px; text-align:center; color:#8e8e93;">내역이 없습니다.</div>`;
+        let dayRecords = records[key] || [];
+        if (dayRecords.length === 0) {
+            list.innerHTML = `<div style="padding:30px; text-align:center; color:#ccc;">내역 없음</div>`;
             return;
         }
 
-        let html = "";
-        dayRecords.forEach(r => {
+        dayRecords.forEach((r, index) => {
+            let div = document.createElement("div");
+            div.className = "record-item";
+            let sign = r.type === 'income' ? '+' : '-';
             let colorClass = r.type === 'income' ? 'amount-income' : 'amount-expense';
-            let sign = r.type === 'income' ? '+' : (r.type === 'expense' ? '-' : '');
-            let categoryText = r.category || (r.type === 'income' ? '수입' : '저축');
-
-            html += `
-            <div class="record-item">
+            let catText = r.type === 'income' ? '수입' : (r.category || '지출');
+            
+            div.innerHTML = `
                 <div class="record-info">
-                    <span class="record-cat">${categoryText}</span>
-                    <span style="font-size:12px; color:#8e8e93;">${r.type === 'expense' ? '지출' : (r.type === 'income' ? '수입' : '저축')}</span>
+                    <span class="record-cat">${catText}</span>
+                    <span class="record-desc">${r.type === 'saving' ? '저축' : (r.type === 'income'?'':'지출')}</span>
                 </div>
                 <div class="record-amount ${colorClass}">${sign}${formatMoney(r.amount)}원</div>
-            </div>
             `;
+
+            // Long Press Event for Edit
+            let pressTimer;
+            div.addEventListener('touchstart', (e) => {
+                pressTimer = setTimeout(() => {
+                    // 진동 (모바일 지원시)
+                    if(navigator.vibrate) navigator.vibrate(50);
+                    startEdit(key, index, r);
+                }, 800);
+            });
+            div.addEventListener('touchend', () => clearTimeout(pressTimer));
+            div.addEventListener('touchmove', () => clearTimeout(pressTimer)); // 스크롤 시 취소
+            
+            // PC용 마우스 이벤트
+            div.addEventListener('mousedown', () => {
+                pressTimer = setTimeout(() => startEdit(key, index, r), 800);
+            });
+            div.addEventListener('mouseup', () => clearTimeout(pressTimer));
+
+            list.appendChild(div);
         });
-        listContainer.innerHTML = html;
     }
 
-    // --- 기능 동작 함수 ---
-    function addSalary() {
-        let amountStr = prompt("월급 금액을 입력하세요 (숫자만)");
-        if(!amountStr) return;
-        let amount = parseInt(amountStr);
-        if(isNaN(amount)) { alert("숫자만 입력해주세요"); return; }
-        
-        balance += amount;
-        saveData();
-    }
-
-    function setBudget() {
-        let weekday = prompt("평일 하루 예산은 얼마인가요?", budgets.weekday);
-        let weekend = prompt("주말 하루 예산은 얼마인가요?", budgets.weekend);
-        
-        if(weekday) budgets.weekday = parseInt(weekday);
-        if(weekend) budgets.weekend = parseInt(weekend);
-        saveData();
-    }
-
-    function saveRecord() {
-        let type = document.getElementById("inputType").value;
-        let category = document.getElementById("inputCategory").value;
-        let amount = parseInt(document.getElementById("inputAmount").value);
-        let dateVal = document.getElementById("inputDate").value;
-
-        if(!amount || !dateVal) {
-            alert("금액과 날짜를 확인해주세요.");
-            return;
+    function startEdit(key, index, record) {
+        if(confirm("이 내역을 수정하시겠습니까?")) {
+            isEditing = true;
+            editKey = key;
+            editIndex = index;
+            // 수정 모드로 폼 열기
+            openForm(null, record); 
         }
-
-        let key = dateVal; // YYYY-MM-DD
-        
-        if(!records[key]) records[key] = [];
-        
-        records[key].push({
-            type: type,
-            amount: amount,
-            category: type === 'expense' ? category : '-'
-        });
-
-        // 잔액 반영
-        if(type === 'expense' || type === 'saving') balance -= amount;
-        if(type === 'income') balance += amount;
-
-        document.getElementById("inputAmount").value = "";
-        toggleForm(); // 폼 닫기
-        
-        // 현재 보고 있는 달력이 입력한 날짜의 달과 다르면 이동할 수도 있겠지만, 일단 저장만 함.
-        saveData();
-        
-        // 입력한 날짜의 상세 내역 바로 보여주기
-        selectedDate = new Date(dateVal);
-        showRecordsForDate(selectedDate);
     }
 
 </script>
-
 </body>
 </html>
