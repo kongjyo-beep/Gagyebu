@@ -5,22 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>가계부써죠</title>
 <style>
-body { font-family: -apple-system; margin:20px; background:#f5f5f5; }
+body { font-family: -apple-system; margin:0; padding:20px; background:#f2f2f7;}
 h1 { font-size:28px; }
 .card { background:white; padding:15px; border-radius:15px; margin-bottom:15px; }
-.balance { font-size:22px; font-weight:bold; }
-button { padding:10px; border:none; border-radius:10px; }
-input, select { width:100%; padding:8px; margin:5px 0; border-radius:8px; border:1px solid #ddd; }
-
-.calendar { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px; }
-.day { background:white; padding:10px; border-radius:10px; text-align:center; font-size:12px; }
-
-.red { background:#ffdddd; }
-.yellow { background:#fff5cc; }
-.green { background:#ddffdd; }
-.gray { background:#eee; }
-
-.nav { display:flex; justify-content:space-between; margin-bottom:10px; }
+button { padding:8px 12px; border-radius:8px; border:none; background:#007aff; color:white;}
+input, select { padding:8px; width:100%; margin-top:5px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;}
+.calendar { display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+.day { padding:8px; border-radius:10px; text-align:center; font-size:13px;}
+.green { background:#d4f8d4;}
+.yellow { background:#fff3b0;}
+.red { background:#ffd6d6;}
+.gray { background:#e5e5ea;}
+.nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+.small { font-size:12px; margin-top:3px;}
 </style>
 </head>
 <body>
@@ -29,113 +26,144 @@ input, select { width:100%; padding:8px; margin:5px 0; border-radius:8px; border
 
 <div class="card">
 <div>현재 잔고</div>
-<div class="balance" id="balance">0원</div>
+<h2 id="balance">0원</h2>
 <button onclick="addSalary()">월급 추가</button>
 </div>
 
 <div class="card">
 <select id="type">
 <option value="expense">지출</option>
-<option value="income">수입</option>
 <option value="saving">저축</option>
+<option value="income">추가수입</option>
 </select>
-
 <input type="number" id="amount" placeholder="금액 입력">
-
 <select id="category">
 <option>식비</option>
 <option>교통비</option>
 <option>월세</option>
-<option>핸드폰요금</option>
+<option>핸드폰</option>
 <option>기타</option>
 </select>
-
-<button onclick="addTransaction()">기록하기</button>
+<button onclick="addRecord()">기록하기</button>
 </div>
 
 <div class="card">
-<h3>이번 달 달력</h3>
+<h3>요일별 예산 설정</h3>
+<input type="number" id="weekdayBudget" placeholder="평일 예산">
+<input type="number" id="weekendBudget" placeholder="주말 예산">
+<button onclick="saveBudget()">저장</button>
+</div>
+
+<div class="card">
+<div class="nav">
+<button onclick="changeMonth(-1)">◀</button>
+<h3 id="monthTitle"></h3>
+<button onclick="changeMonth(1)">▶</button>
+</div>
 <div class="calendar" id="calendar"></div>
 </div>
 
 <script>
 let balance = parseInt(localStorage.getItem("balance")) || 0;
-let savings = parseInt(localStorage.getItem("savings")) || 0;
-let transactions = JSON.parse(localStorage.getItem("transactions")) || {};
+let records = JSON.parse(localStorage.getItem("records")) || {};
+let budgets = JSON.parse(localStorage.getItem("budgets")) || {weekday:6500, weekend:6500};
+let currentDate = new Date();
 
-let budgets = {
-0: 6500,
-1: 6500,
-2: 6500,
-3: 6500,
-4: 6500,
-5: 10000,
-6: 10000
-};
+function saveData(){
+localStorage.setItem("balance", balance);
+localStorage.setItem("records", JSON.stringify(records));
+localStorage.setItem("budgets", JSON.stringify(budgets));
+}
 
 function updateBalance(){
 document.getElementById("balance").innerText = balance.toLocaleString()+"원";
-localStorage.setItem("balance", balance);
 }
 
 function addSalary(){
-let salary = prompt("추가할 월급 입력");
-if(salary){
+let salary = prompt("월급 금액 입력");
+if(!salary) return;
 balance += parseInt(salary);
+saveData();
 updateBalance();
 }
-}
 
-function addTransaction(){
+function addRecord(){
 let type = document.getElementById("type").value;
 let amount = parseInt(document.getElementById("amount").value);
-let date = new Date().toISOString().split("T")[0];
-
 if(!amount) return;
 
-if(type==="expense"){
-balance -= amount;
-if(!transactions[date]) transactions[date]=0;
-transactions[date]+=amount;
-}
-if(type==="income"){
-balance += amount;
-}
-if(type==="saving"){
-balance -= amount;
-savings += amount;
+let today = new Date();
+let key = today.toISOString().split("T")[0];
+
+if(!records[key]) records[key]=[];
+
+records[key].push({type, amount});
+
+if(type==="expense" || type==="saving") balance -= amount;
+if(type==="income") balance += amount;
+
+saveData();
+updateBalance();
+renderCalendar();
 }
 
-localStorage.setItem("transactions", JSON.stringify(transactions));
-localStorage.setItem("savings", savings);
-updateBalance();
+function saveBudget(){
+budgets.weekday = parseInt(document.getElementById("weekdayBudget").value) || budgets.weekday;
+budgets.weekend = parseInt(document.getElementById("weekendBudget").value) || budgets.weekend;
+saveData();
+renderCalendar();
+}
+
+function changeMonth(num){
+currentDate.setMonth(currentDate.getMonth()+num);
 renderCalendar();
 }
 
 function renderCalendar(){
 let cal = document.getElementById("calendar");
 cal.innerHTML="";
-let today = new Date();
-let year = today.getFullYear();
-let month = today.getMonth();
-let days = new Date(year, month+1, 0).getDate();
+let year = currentDate.getFullYear();
+let month = currentDate.getMonth();
+document.getElementById("monthTitle").innerText = `${year}년 ${month+1}월`;
+
+let days = new Date(year, month+1,0).getDate();
 
 for(let i=1;i<=days;i++){
-let date = new Date(year, month, i);
-let key = date.toISOString().split("T")[0];
-let day = document.createElement("div");
-day.className="day";
-let spent = transactions[key] || 0;
-let budget = budgets[date.getDay()];
+let dateObj = new Date(year,month,i);
+let key = dateObj.toISOString().split("T")[0];
+let dayDiv = document.createElement("div");
+dayDiv.className="day gray";
 
-if(spent>budget) day.classList.add("red");
-else if(spent===budget && spent>0) day.classList.add("yellow");
-else if(spent>0 && spent<budget) day.classList.add("green");
-else day.classList.add("gray");
-
-day.innerHTML = i+"<br>"+spent+"원";
-cal.appendChild(day);
+let total=0;
+if(records[key]){
+records[key].forEach(r=>{
+if(r.type==="expense") total+=r.amount;
+});
 }
+
+let day = dateObj.getDay();
+let limit = (day===0||day===6)? budgets.weekend : budgets.weekday;
+
+if(total>0){
+if(total<limit) dayDiv.className="day green";
+else if(total===limit) dayDiv.className="day yellow";
+else dayDiv.className="day red";
+}
+
+dayDiv.innerHTML = `${i}<div class="small">${total.toLocaleString()}원</div>`;
+dayDiv.onclick = ()=> showDetail(key);
+cal.appendChild(dayDiv);
+}
+}
+
+function showDetail(key){
+let list = records[key];
+if(!list){ alert("기록 없음"); return;}
+let text="";
+list.forEach(r=>{
+text+=`${r.type} - ${r.amount}원\n`;
+});
+alert(text);
 }
 
 updateBalance();
