@@ -4,32 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>가계부써죠</title>
-
 <style>
-body { font-family: -apple-system; margin:20px; background:#f6f7f9; }
-h1 { margin-bottom:5px; }
-.card {
-  background:white; padding:15px; margin:10px 0;
-  border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.05);
-}
-button { padding:10px; margin-top:5px; width:100%; }
-input,select { width:100%; padding:8px; margin-top:5px; }
-.big { font-size:22px; font-weight:bold; }
+body { font-family: -apple-system; margin:20px; background:#f5f5f5; }
+h1 { font-size:28px; }
+.card { background:white; padding:15px; border-radius:15px; margin-bottom:15px; }
+.balance { font-size:22px; font-weight:bold; }
+button { padding:10px; border:none; border-radius:10px; }
+input, select { width:100%; padding:8px; margin:5px 0; border-radius:8px; border:1px solid #ddd; }
+
+.calendar { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px; }
+.day { background:white; padding:10px; border-radius:10px; text-align:center; font-size:12px; }
+
+.red { background:#ffdddd; }
+.yellow { background:#fff5cc; }
+.green { background:#ddffdd; }
+.gray { background:#eee; }
+
+.nav { display:flex; justify-content:space-between; margin-bottom:10px; }
 </style>
 </head>
-
 <body>
 
 <h1>가계부써죠</h1>
 
 <div class="card">
 <div>현재 잔고</div>
-<div id="balance" class="big"></div>
-</div>
-
-<div class="card">
-<div>총 저축</div>
-<div id="savings" class="big"></div>
+<div class="balance" id="balance">0원</div>
+<button onclick="addSalary()">월급 추가</button>
 </div>
 
 <div class="card">
@@ -39,60 +40,106 @@ input,select { width:100%; padding:8px; margin-top:5px; }
 <option value="saving">저축</option>
 </select>
 
-<input id="amount" type="number" placeholder="금액 입력">
+<input type="number" id="amount" placeholder="금액 입력">
 
 <select id="category">
 <option>식비</option>
-<option>카페</option>
-<option>교통</option>
+<option>교통비</option>
 <option>월세</option>
-<option>통신비</option>
+<option>핸드폰요금</option>
 <option>기타</option>
 </select>
 
-<button onclick="add()">기록하기</button>
+<button onclick="addTransaction()">기록하기</button>
+</div>
+
+<div class="card">
+<h3>이번 달 달력</h3>
+<div class="calendar" id="calendar"></div>
 </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("gagyebu"));
+let balance = parseInt(localStorage.getItem("balance")) || 0;
+let savings = parseInt(localStorage.getItem("savings")) || 0;
+let transactions = JSON.parse(localStorage.getItem("transactions")) || {};
 
-if(!data){
-  data = { balance:0, savings:0, history:[] };
-  const start = prompt("시작 금액(월급)을 입력하세요","");
-  data.balance = Number(start || 0);
-  save();
+let budgets = {
+0: 6500,
+1: 6500,
+2: 6500,
+3: 6500,
+4: 6500,
+5: 10000,
+6: 10000
+};
+
+function updateBalance(){
+document.getElementById("balance").innerText = balance.toLocaleString()+"원";
+localStorage.setItem("balance", balance);
 }
 
-function save(){
-  localStorage.setItem("gagyebu", JSON.stringify(data));
-  render();
+function addSalary(){
+let salary = prompt("추가할 월급 입력");
+if(salary){
+balance += parseInt(salary);
+updateBalance();
+}
 }
 
-function render(){
-  document.getElementById("balance").innerText =
-    data.balance.toLocaleString()+"원";
-  document.getElementById("savings").innerText =
-    data.savings.toLocaleString()+"원";
+function addTransaction(){
+let type = document.getElementById("type").value;
+let amount = parseInt(document.getElementById("amount").value);
+let date = new Date().toISOString().split("T")[0];
+
+if(!amount) return;
+
+if(type==="expense"){
+balance -= amount;
+if(!transactions[date]) transactions[date]=0;
+transactions[date]+=amount;
+}
+if(type==="income"){
+balance += amount;
+}
+if(type==="saving"){
+balance -= amount;
+savings += amount;
 }
 
-function add(){
-  const type = document.getElementById("type").value;
-  const amt = Number(document.getElementById("amount").value);
-
-  if(!amt) return;
-
-  if(type==="expense") data.balance -= amt;
-  if(type==="income") data.balance += amt;
-  if(type==="saving"){
-    data.balance -= amt;
-    data.savings += amt;
-  }
-
-  data.history.push({type,amt,date:new Date()});
-  save();
+localStorage.setItem("transactions", JSON.stringify(transactions));
+localStorage.setItem("savings", savings);
+updateBalance();
+renderCalendar();
 }
 
-render();
+function renderCalendar(){
+let cal = document.getElementById("calendar");
+cal.innerHTML="";
+let today = new Date();
+let year = today.getFullYear();
+let month = today.getMonth();
+let days = new Date(year, month+1, 0).getDate();
+
+for(let i=1;i<=days;i++){
+let date = new Date(year, month, i);
+let key = date.toISOString().split("T")[0];
+let day = document.createElement("div");
+day.className="day";
+let spent = transactions[key] || 0;
+let budget = budgets[date.getDay()];
+
+if(spent>budget) day.classList.add("red");
+else if(spent===budget && spent>0) day.classList.add("yellow");
+else if(spent>0 && spent<budget) day.classList.add("green");
+else day.classList.add("gray");
+
+day.innerHTML = i+"<br>"+spent+"원";
+cal.appendChild(day);
+}
+}
+
+updateBalance();
+renderCalendar();
 </script>
 
 </body>
