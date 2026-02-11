@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가계부써죠</title>
+
+<style>
+body { font-family: -apple-system; margin:20px; background:#f6f7f9; }
+h1 { margin-bottom:5px; }
+.card {
+  background:white; padding:15px; margin:10px 0;
+  border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+button { padding:10px; margin-top:5px; width:100%; }
+input,select { width:100%; padding:8px; margin-top:5px; }
+.big { font-size:22px; font-weight:bold; }
+</style>
+</head>
+
+<body>
+
+<h1>가계부써죠</h1>
+
+<div class="card">
+<div>현재 잔고</div>
+<div id="balance" class="big"></div>
+</div>
+
+<div class="card">
+<div>총 저축</div>
+<div id="savings" class="big"></div>
+</div>
+
+<div class="card">
+<select id="type">
+<option value="expense">지출</option>
+<option value="income">수입</option>
+<option value="saving">저축</option>
+</select>
+
+<input id="amount" type="number" placeholder="금액 입력">
+
+<select id="category">
+<option>식비</option>
+<option>카페</option>
+<option>교통</option>
+<option>월세</option>
+<option>통신비</option>
+<option>기타</option>
+</select>
+
+<button onclick="add()">기록하기</button>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("gagyebu"));
+
+if(!data){
+  data = { balance:0, savings:0, history:[] };
+  const start = prompt("시작 금액(월급)을 입력하세요","");
+  data.balance = Number(start || 0);
+  save();
+}
+
+function save(){
+  localStorage.setItem("gagyebu", JSON.stringify(data));
+  render();
+}
+
+function render(){
+  document.getElementById("balance").innerText =
+    data.balance.toLocaleString()+"원";
+  document.getElementById("savings").innerText =
+    data.savings.toLocaleString()+"원";
+}
+
+function add(){
+  const type = document.getElementById("type").value;
+  const amt = Number(document.getElementById("amount").value);
+
+  if(!amt) return;
+
+  if(type==="expense") data.balance -= amt;
+  if(type==="income") data.balance += amt;
+  if(type==="saving"){
+    data.balance -= amt;
+    data.savings += amt;
+  }
+
+  data.history.push({type,amt,date:new Date()});
+  save();
+}
+
+render();
+</script>
+
+</body>
+</html>
