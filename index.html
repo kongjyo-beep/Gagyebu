@@ -852,9 +852,8 @@
             if (mode === 'expense') {
                 typeSelect.add(new Option("지출", "expense"));
                 typeSelect.add(new Option("저축", "saving"));
-                if(getDateKey(selectedDate) === getDateKey(new Date())) {
-                    document.getElementById("btnNoSpend").style.display = "block";
-                }
+                // 날짜 상관없이 지출 팝업이면 무조건 표시
+                document.getElementById("btnNoSpend").style.display = "block";
             } else {
                 typeSelect.add(new Option("수입", "income"));
                 typeSelect.add(new Option("저축 출금 (깨기)", "withdraw_saving"));
