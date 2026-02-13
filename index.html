@@ -513,12 +513,11 @@
 
         let monthlyData = getMonthlyData(year, month);
         
-        document.getElementById("statTotalIncome").innerText = formatStatMoney(monthlyData.income);
-        document.getElementById("statFixedExpense").innerText = formatStatMoney(monthlyData.fixed);
+        document.getElementById("statTotalIncome").innerText = formatMoney(monthlyData.income) + "원";
+        document.getElementById("statFixedExpense").innerText = formatMoney(monthlyData.fixed) + "원";
         let available = monthlyData.income - monthlyData.fixed;
-        document.getElementById("statAvailableBudget").innerText = formatStatMoney(available);
+        document.getElementById("statAvailableBudget").innerText = formatMoney(available) + "원";
         
-        // 총 편성 예산 계산
         let startDate = new Date(year, month, payday);
         let endDate = new Date(year, month + 1, payday - 1);
         let plannedTotal = 0;
@@ -527,7 +526,7 @@
             plannedTotal += budgets[loop.getDay()];
             loop.setDate(loop.getDate() + 1);
         }
-        document.getElementById("statPlannedBudget").innerText = formatStatMoney(plannedTotal);
+        document.getElementById("statPlannedBudget").innerText = formatMoney(plannedTotal) + "원";
 
         renderSvgPieChart("pieChartType", "legendType", [
             { label: "고정비", value: monthlyData.fixed, color: "#FF6B6B" },
@@ -610,6 +609,17 @@
             let startDate = new Date(y, m, payday);
             let endDate = new Date(y, m+1, payday - 1);
             
+            // 데이터가 있는 달인지 확인
+            let hasData = false;
+            let startKey = getDateKey(startDate);
+            let endKey = getDateKey(endDate);
+            
+            Object.keys(records).forEach(key => {
+                if(key >= startKey && key <= endKey) hasData = true;
+            });
+            
+            if(!hasData) continue; // 데이터 없는 달 건너뛰기
+
             let monthBudget = 0;
             let monthExpense = 0;
             let loop = new Date(startDate);
