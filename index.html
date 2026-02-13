@@ -15,6 +15,8 @@
     :root {
         --ios-bg: #F5F5F7;
         --ios-card: #FFFFFF;
+        
+        /* 파스텔 톤 팔레트 */
         --ios-blue: #5C95FF;
         --ios-red: #FF6B6B;
         --ios-green: #51CF66;
@@ -189,11 +191,9 @@
     .sheet-cancel { border-radius: 14px; font-weight: 600; background: white; color: #495057;}
     .sheet-delete { color: var(--ios-red); }
 
-    /* 카테고리 관리 스타일 */
     .cat-list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f3f5; font-size: 14px; }
     .cat-edit-btn { color: var(--ios-blue); cursor: pointer; font-weight: 500; padding: 5px; font-size: 13px; }
     
-    /* 팝업 버튼 스타일 개선 (큼직하게) */
     .popup-btn-row { display: flex; gap: 8px; margin-top: 15px; }
     .popup-btn { flex: 1; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; }
     .popup-btn-add { background: var(--ios-blue); color: white; }
@@ -453,6 +453,15 @@
 
     // --- 유틸리티 ---
     function formatMoney(num) { return num.toLocaleString(); }
+    
+    // 통계용 짧은 금액 표기 (5.5만원)
+    function formatStatMoney(num) {
+        if(Math.abs(num) < 10000) return num.toLocaleString() + "원";
+        let val = (num / 10000).toFixed(1);
+        if(val.endsWith('.0')) val = val.slice(0, -2);
+        return val + "만원";
+    }
+
     function formatCurrencyInput(input) {
         let value = input.value.replace(/[^0-9]/g, '');
         input.value = value ? parseInt(value).toLocaleString() : "";
@@ -490,38 +499,26 @@
         }
     }
 
-    // --- 통계 (로직: 기준일 반영하여 홈화면과 통일) ---
+    // --- 통계 ---
     function changeStatsMonth(delta) {
         currentStatsDate.setMonth(currentStatsDate.getMonth() + delta);
         renderStats();
     }
 
-    // 날짜가 기준일(payday)을 고려한 '해당 월'에 속하는지 체크
-    function getBelongingMonth(dateObj) {
-        // 예: payday=10, 2월 10일 -> 2월 / 2월 9일 -> 1월
-        let y = dateObj.getFullYear();
-        let m = dateObj.getMonth();
-        let d = dateObj.getDate();
-        if (d < payday) m -= 1; 
-        return new Date(y, m, 1);
-    }
-
     function renderStats() {
         let year = currentStatsDate.getFullYear();
         let month = currentStatsDate.getMonth();
-        // 헤더 타이틀 표시용 (실제 표시되는 '회계월')
         let viewDate = new Date(year, month, 1);
         document.getElementById("statsDateTitle").innerText = `${viewDate.getFullYear()}년 ${viewDate.getMonth()+1}월`;
 
         let monthlyData = getMonthlyData(year, month);
         
-        document.getElementById("statTotalIncome").innerText = formatMoney(monthlyData.income) + "원";
-        document.getElementById("statFixedExpense").innerText = formatMoney(monthlyData.fixed) + "원";
+        document.getElementById("statTotalIncome").innerText = formatStatMoney(monthlyData.income);
+        document.getElementById("statFixedExpense").innerText = formatStatMoney(monthlyData.fixed);
         let available = monthlyData.income - monthlyData.fixed;
-        document.getElementById("statAvailableBudget").innerText = formatMoney(available) + "원";
+        document.getElementById("statAvailableBudget").innerText = formatStatMoney(available);
         
-        // 월 평균 일수(30일) 기준 예산 총액 근사치 (또는 정확한 일수 계산)
-        // 여기선 단순하게 해당 '기간'의 일수를 계산
+        // 총 편성 예산 계산
         let startDate = new Date(year, month, payday);
         let endDate = new Date(year, month + 1, payday - 1);
         let plannedTotal = 0;
@@ -530,7 +527,7 @@
             plannedTotal += budgets[loop.getDay()];
             loop.setDate(loop.getDate() + 1);
         }
-        document.getElementById("statPlannedBudget").innerText = formatMoney(plannedTotal) + "원";
+        document.getElementById("statPlannedBudget").innerText = formatStatMoney(plannedTotal);
 
         renderSvgPieChart("pieChartType", "legendType", [
             { label: "고정비", value: monthlyData.fixed, color: "#FF6B6B" },
@@ -547,8 +544,6 @@
 
     function getMonthlyData(year, month) {
         let income = 0; let fixed = 0; let variable = 0; let categories = {};
-        
-        // 기간 정의
         let start = new Date(year, month, payday);
         let end = new Date(year, month + 1, payday - 1);
         let startKey = getDateKey(start);
@@ -608,33 +603,23 @@
         let today = new Date();
         let todayKey = getDateKey(today);
 
-        // 최근 6개월 데이터만 표시 (스크롤 압박 줄임) + 현재월까지
         for(let i=5; i>=0; i--) {
             let targetDate = new Date(currentStatsDate.getFullYear(), currentStatsDate.getMonth() - i, 1);
             let y = targetDate.getFullYear();
             let m = targetDate.getMonth();
-            
-            // 기간 설정
             let startDate = new Date(y, m, payday);
             let endDate = new Date(y, m+1, payday - 1);
             
-            // 미래 기간이면 중단할 수도 있지만, 그래프는 계속 그림
-            
             let monthBudget = 0;
             let monthExpense = 0;
-            
-            // 날짜별 루프
             let loop = new Date(startDate);
             while(loop <= endDate) {
-                // 오늘 이후 미래 날짜는 계산에서 제외 (현재 진행중인 달의 정확도 위해)
                 if (getDateKey(loop) > todayKey) {
                     loop.setDate(loop.getDate() + 1);
                     continue;
                 }
-                
                 let k = getDateKey(loop);
                 monthBudget += budgets[loop.getDay()];
-                
                 if(records[k]) {
                     records[k].forEach(r => {
                         if(r.type==='expense' && r.nature!=='fixed') monthExpense += r.amount;
@@ -643,7 +628,6 @@
                 loop.setDate(loop.getDate() + 1);
             }
             
-            // 아직 시작도 안 한 달이면 0으로 처리하지 않고 스킵 (그래프 안그림)
             if(getDateKey(startDate) > todayKey) continue;
 
             let saved = monthBudget - monthExpense;
@@ -682,8 +666,8 @@
             let x = getX(idx); let y = getY(val);
             let color = val >= 0 ? "#51CF66" : "#FF6B6B";
             svg.innerHTML += `<circle cx="${x}" cy="${y}" r="5" fill="white" stroke="${color}" stroke-width="3"/>`;
-            let textVal = Math.round(val / 10000);
-            svg.innerHTML += `<text x="${x}" y="${y - 12}" font-size="11" fill="#868e96" text-anchor="middle" font-weight="600">${textVal}만</text>`;
+            let textVal = formatStatMoney(val); // 5.5만원 스타일 적용
+            svg.innerHTML += `<text x="${x}" y="${y - 12}" font-size="11" fill="#868e96" text-anchor="middle" font-weight="600">${textVal}</text>`;
             svg.innerHTML += `<text x="${x}" y="${h - 2}" font-size="11" fill="#adb5bd" text-anchor="middle">${labels[idx]}</text>`;
         });
     }
@@ -751,9 +735,10 @@
         let list = document.getElementById("categoryListContainer");
         list.innerHTML = "";
         categories.forEach((cat, idx) => {
+            // 이모지 삭제하고 텍스트만 '수정'
             list.innerHTML += `<div class="cat-list-item">
                 <span>${cat}</span>
-                <span class="cat-edit-btn" onclick="editCategory(${idx})">✏️ 수정</span>
+                <span class="cat-edit-btn" onclick="editCategory(${idx})">수정</span>
             </div>`;
         });
     }
@@ -777,7 +762,7 @@
         }
     }
 
-    // --- 대시보드 (통일된 로직 적용) ---
+    // --- 대시보드 ---
     function updateDashboard() {
         let today = new Date();
         let todayKey = getDateKey(today);
@@ -801,14 +786,12 @@
         });
         document.getElementById("savingsDisplay").innerText = formatMoney(initialSavings + totalRecordedSavings) + "원";
 
-        // 아낀 돈 (기준일 로직)
         let startYear = today.getFullYear(), startMonth = today.getMonth();
         if (today.getDate() < payday) startMonth -= 1;
         
         let accumulatedSaved = 0;
         let loopDate = new Date(startYear, startMonth, payday);
         
-        // 기준일부터 '오늘'까지만
         while(getDateKey(loopDate) <= todayKey) {
             let key = getDateKey(loopDate);
             let dailyBudget = budgets[loopDate.getDay()];
@@ -824,7 +807,7 @@
         else { saveEl.innerText = formatMoney(accumulatedSaved) + "원"; saveEl.className = "info-value val-bad"; }
     }
 
-    // --- 수정된 openForm ---
+    // --- 폼 ---
     function openForm(mode, record=null) {
         document.getElementById("formOverlay").classList.add("active");
         const typeSelect = document.getElementById("inputType");
@@ -961,13 +944,12 @@
             
             let limit = budgets[dayOfWeek];
             
-            // 점 표시 로직 (자동 성공 삭제됨, 직접 기록시에만)
             if(dailyExp > 0) {
                 let dot = document.createElement("div"); dot.className = "status-dot";
                 if(dailyExp > limit) dot.classList.add("dot-red"); else if(dailyExp === limit) dot.classList.add("dot-yellow"); else dot.classList.add("dot-green");
                 dotsContainer.appendChild(dot);
             } 
-            else if (hasRecord && dailyExp === 0) { // 0원(무지출) 기록이 있으면 초록점
+            else if (hasRecord && dailyExp === 0) {
                  let dot = document.createElement("div"); dot.className = "status-dot dot-green";
                  dotsContainer.appendChild(dot);
             }
