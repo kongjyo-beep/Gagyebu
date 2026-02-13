@@ -15,8 +15,6 @@
     :root {
         --ios-bg: #F5F5F7;
         --ios-card: #FFFFFF;
-        
-        /* 파스텔 톤 팔레트 */
         --ios-blue: #5C95FF;
         --ios-red: #FF6B6B;
         --ios-green: #51CF66;
@@ -38,12 +36,10 @@
         padding-bottom: calc(70px + var(--safe-bottom));
     }
 
-    /* --- 레이아웃 --- */
     .view-container { display: none; animation: fadeIn 0.2s; }
     .view-container.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* --- 헤더 --- */
     .header-card {
         background: var(--ios-card); 
         padding: calc(var(--safe-top) + 10px) 16px 16px 16px;
@@ -62,7 +58,6 @@
     .balance-amount { font-size: 34px; font-weight: 800; letter-spacing: -0.5px; color: #212529; }
     .expected-balance { font-size: 12px; color: var(--ios-indigo); font-weight: 600; margin-top: 4px; background: #F3F0FF; padding: 3px 8px; border-radius: 10px; display: inline-block;}
 
-    /* 서브 정보 */
     .sub-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     .info-box {
         background: #F8F9FA; border-radius: 16px; padding: 10px; text-align: center;
@@ -75,7 +70,6 @@
     .val-good { color: var(--ios-green); }
     .val-bad { color: var(--ios-red); }
 
-    /* 버튼 그룹 */
     .action-row { display: flex; gap: 6px; margin-top: 0; }
     .btn-main {
         flex: 1; padding: 11px 0; border-radius: 14px; border: none;
@@ -87,7 +81,6 @@
     .btn-income { background: var(--ios-green); box-shadow: 0 3px 8px rgba(81, 207, 102, 0.25); }
     .btn-budget { background: white; color: var(--ios-blue); border: 1px solid var(--ios-blue); box-shadow: none; }
 
-    /* --- 달력 --- */
     .calendar-container {
         background: var(--ios-card); margin: 0 16px; border-radius: 20px;
         padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
@@ -120,7 +113,6 @@
     }
     .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #868e96; }
 
-    /* --- 리스트 --- */
     .detail-section { margin: 16px 16px; }
     .list-header { font-size: 16px; font-weight:700; margin-bottom: 8px; margin-left: 5px; color: #495057; }
     .record-list { background: var(--ios-card); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
@@ -138,15 +130,12 @@
     .amount-income { color: var(--ios-blue); font-weight:600; font-size: 15px; }
     .amount-saving { color: var(--ios-green); font-weight:600; font-size: 15px; }
 
-    /* --- 통계 페이지 (헤더 높이 수정됨) --- */
     .stats-header { 
         display: flex; align-items: center; justify-content: space-between; 
-        /* 상단 여백 대폭 확대 (글자 잘림 방지) */
         padding: calc(var(--safe-top) + 30px) 24px 15px 24px;
     }
     .stats-card { background: white; border-radius: 16px; padding: 18px; margin: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
     .stats-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #343a40; }
-    
     .budget-summary { background: #F8F9FA; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
     .bs-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: #868e96; }
     .bs-row.total { font-size: 14px; font-weight: 700; color: #343a40; margin-top: 10px; border-top: 1px solid #dee2e6; padding-top: 10px; margin-bottom: 0; }
@@ -162,7 +151,6 @@
     .line-path { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
     .line-text { font-size: 10px; fill: #adb5bd; text-anchor: middle; font-weight: 500; }
 
-    /* --- 하단 탭바 --- */
     .tab-bar {
         position: fixed; bottom: 0; left: 0; right: 0;
         background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
@@ -178,7 +166,6 @@
 
     .footer-copy { text-align: center; color: #DEE2E6; font-size: 10px; margin-top: 30px; margin-bottom: 80px;}
 
-    /* 모달 */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: none; z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
     .modal-overlay.active { display: flex; }
     .input-group { background: white; width: 85%; max-width: 340px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); animation: popUp 0.2s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow-y: auto; }
@@ -191,6 +178,7 @@
     .budget-tabs { display: flex; background: #F1F3F5; border-radius: 10px; padding: 3px; margin-bottom: 15px; }
     .budget-tab-item { flex: 1; text-align: center; padding: 8px 0; font-size: 12px; color: #868e96; border-radius: 8px; cursor: pointer; font-weight: 600;}
     .budget-tab-item.active { background: white; color: var(--ios-black); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    
     .action-sheet-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); z-index: 3000; display: none; align-items: flex-end; }
     .action-sheet-overlay.active { display: flex; }
     .action-sheet { background: transparent; width: 100%; padding: 10px; box-sizing: border-box; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -202,8 +190,14 @@
     .sheet-delete { color: var(--ios-red); }
 
     /* 카테고리 관리 스타일 */
-    .cat-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-    .cat-delete-btn { color: var(--ios-red); cursor: pointer; font-weight: 600; padding: 5px; }
+    .cat-list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f3f5; font-size: 14px; }
+    .cat-edit-btn { color: var(--ios-blue); cursor: pointer; font-weight: 500; padding: 5px; font-size: 13px; }
+    
+    /* 팝업 버튼 스타일 개선 (큼직하게) */
+    .popup-btn-row { display: flex; gap: 8px; margin-top: 15px; }
+    .popup-btn { flex: 1; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; }
+    .popup-btn-add { background: var(--ios-blue); color: white; }
+    .popup-btn-success { background: var(--ios-green); color: white; width: 100%; margin-bottom: 10px; padding: 14px; border-radius: 14px; border:none; font-size:15px; font-weight:600; box-shadow: 0 4px 10px rgba(81, 207, 102, 0.3); cursor: pointer;}
 
 </style>
 </head>
@@ -344,7 +338,7 @@
         <div class="form-row"><label class="form-label">금액</label><input type="text" id="inputAmount" placeholder="0" inputmode="numeric" onkeyup="formatCurrencyInput(this)"></div>
         <div class="form-row"><label class="form-label">메모</label><input type="text" id="inputMemo" placeholder="내용 입력"></div>
         
-        <button id="btnNoSpend" class="btn-income" style="width:100%; margin-bottom:10px; display:none;" onclick="saveNoSpend()">🎉 오늘 무지출 성공!</button>
+        <button id="btnNoSpend" class="popup-btn-success" style="display:none;" onclick="saveNoSpend()">🎉 오늘 무지출 성공!</button>
         <button class="btn-main" style="width:100%" onclick="saveRecord()">저장하기</button>
     </div>
 </div>
@@ -401,8 +395,8 @@
         <h3>카테고리 관리</h3>
         <div id="categoryListContainer" style="max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius:10px; margin-bottom:10px;"></div>
         <div style="display:flex; gap:5px;">
-            <input type="text" id="newCategoryName" placeholder="새 항목 이름">
-            <button class="btn-main" style="width:60px;" onclick="addNewCategory()">추가</button>
+            <input type="text" id="newCategoryName" placeholder="새 항목 추가">
+            <button class="popup-btn popup-btn-add" style="width:60px; padding:10px;" onclick="addNewCategory()">추가</button>
         </div>
         <button class="sheet-btn" style="margin-top:10px;" onclick="closeCategorySettingsReal()">닫기</button>
     </div>
@@ -496,16 +490,28 @@
         }
     }
 
-    // --- 통계 (수정됨: 홈화면과 로직 일치) ---
+    // --- 통계 (로직: 기준일 반영하여 홈화면과 통일) ---
     function changeStatsMonth(delta) {
         currentStatsDate.setMonth(currentStatsDate.getMonth() + delta);
         renderStats();
     }
 
+    // 날짜가 기준일(payday)을 고려한 '해당 월'에 속하는지 체크
+    function getBelongingMonth(dateObj) {
+        // 예: payday=10, 2월 10일 -> 2월 / 2월 9일 -> 1월
+        let y = dateObj.getFullYear();
+        let m = dateObj.getMonth();
+        let d = dateObj.getDate();
+        if (d < payday) m -= 1; 
+        return new Date(y, m, 1);
+    }
+
     function renderStats() {
         let year = currentStatsDate.getFullYear();
         let month = currentStatsDate.getMonth();
-        document.getElementById("statsDateTitle").innerText = `${year}년 ${month+1}월`;
+        // 헤더 타이틀 표시용 (실제 표시되는 '회계월')
+        let viewDate = new Date(year, month, 1);
+        document.getElementById("statsDateTitle").innerText = `${viewDate.getFullYear()}년 ${viewDate.getMonth()+1}월`;
 
         let monthlyData = getMonthlyData(year, month);
         
@@ -514,9 +520,16 @@
         let available = monthlyData.income - monthlyData.fixed;
         document.getElementById("statAvailableBudget").innerText = formatMoney(available) + "원";
         
-        let daysInMonth = new Date(year, month+1, 0).getDate();
+        // 월 평균 일수(30일) 기준 예산 총액 근사치 (또는 정확한 일수 계산)
+        // 여기선 단순하게 해당 '기간'의 일수를 계산
+        let startDate = new Date(year, month, payday);
+        let endDate = new Date(year, month + 1, payday - 1);
         let plannedTotal = 0;
-        for(let d=1; d<=daysInMonth; d++) plannedTotal += budgets[new Date(year, month, d).getDay()];
+        let loop = new Date(startDate);
+        while(loop <= endDate) {
+            plannedTotal += budgets[loop.getDay()];
+            loop.setDate(loop.getDate() + 1);
+        }
         document.getElementById("statPlannedBudget").innerText = formatMoney(plannedTotal) + "원";
 
         renderSvgPieChart("pieChartType", "legendType", [
@@ -534,9 +547,15 @@
 
     function getMonthlyData(year, month) {
         let income = 0; let fixed = 0; let variable = 0; let categories = {};
+        
+        // 기간 정의
+        let start = new Date(year, month, payday);
+        let end = new Date(year, month + 1, payday - 1);
+        let startKey = getDateKey(start);
+        let endKey = getDateKey(end);
+
         Object.keys(records).forEach(key => {
-            let rDate = new Date(key);
-            if(rDate.getFullYear() === year && rDate.getMonth() === month) {
+            if(key >= startKey && key <= endKey) {
                 records[key].forEach(r => {
                     if(r.type === 'income') income += r.amount;
                     else if(r.type === 'expense') {
@@ -586,59 +605,53 @@
         svg.innerHTML = "";
         let points = [];
         let labels = [];
-        let allDates = Object.keys(records).sort();
-        let startD = allDates.length > 0 ? new Date(allDates[0]) : new Date();
-        startD.setDate(1); 
-        let endD = new Date(currentStatsDate.getFullYear(), currentStatsDate.getMonth(), 1);
-        let loopD = new Date(startD);
-        if(startD > endD) loopD = new Date(endD);
-
-        // 현재 날짜 (오늘까지의 절약액 계산용)
         let today = new Date();
         let todayKey = getDateKey(today);
 
-        while(loopD <= endD) {
-            let y = loopD.getFullYear();
-            let m = loopD.getMonth();
+        // 최근 6개월 데이터만 표시 (스크롤 압박 줄임) + 현재월까지
+        for(let i=5; i>=0; i--) {
+            let targetDate = new Date(currentStatsDate.getFullYear(), currentStatsDate.getMonth() - i, 1);
+            let y = targetDate.getFullYear();
+            let m = targetDate.getMonth();
             
-            // 만약 루프가 '이번 달'을 그리고 있다면 -> '오늘까지'의 절약액을 사용 (홈화면과 일치)
-            let saved = 0;
-            if(y === today.getFullYear() && m === today.getMonth()) {
-                // 이번달: 오늘까지 로직
-                let startYear = today.getFullYear(), startMonth = today.getMonth();
-                if (today.getDate() < payday) startMonth -= 1; // 월급날 이전이면 저번달부터? 아니, 여기선 그냥 이번달 1일~오늘로 단순화
-                
-                // 홈화면과 정확히 일치시키기 위해 calculateAccumulatedSaved 로직 재사용
-                let accSaved = 0;
-                let tempD = new Date(y, m, payday); // 기준일 시작
-                // 기준일 로직이 복잡하므로, 단순히 1일~오늘까지 예산-지출로 통일 (가장 직관적)
-                let tempStart = new Date(y, m, 1);
-                
-                // 만약 오늘이 10일이면, 1일~10일의 예산 - 지출
-                let checkDate = new Date(tempStart);
-                while(checkDate <= today) {
-                    let k = getDateKey(checkDate);
-                    let budget = budgets[checkDate.getDay()];
-                    let exp = 0;
-                    if(records[k]) records[k].forEach(r => { if(r.type==='expense' && r.nature!=='fixed') exp+=r.amount; });
-                    accSaved += (budget - exp);
-                    checkDate.setDate(checkDate.getDate() + 1);
+            // 기간 설정
+            let startDate = new Date(y, m, payday);
+            let endDate = new Date(y, m+1, payday - 1);
+            
+            // 미래 기간이면 중단할 수도 있지만, 그래프는 계속 그림
+            
+            let monthBudget = 0;
+            let monthExpense = 0;
+            
+            // 날짜별 루프
+            let loop = new Date(startDate);
+            while(loop <= endDate) {
+                // 오늘 이후 미래 날짜는 계산에서 제외 (현재 진행중인 달의 정확도 위해)
+                if (getDateKey(loop) > todayKey) {
+                    loop.setDate(loop.getDate() + 1);
+                    continue;
                 }
-                saved = accSaved;
-
-            } else {
-                // 지나간 달: 전체 예산 - 전체 변동지출
-                let daysInMonth = new Date(y, m+1, 0).getDate();
-                let monthBudget = 0;
-                for(let day=1; day<=daysInMonth; day++) monthBudget += budgets[new Date(y, m, day).getDay()];
-                let monthData = getMonthlyData(y, m);
-                saved = monthBudget - monthData.variable;
+                
+                let k = getDateKey(loop);
+                monthBudget += budgets[loop.getDay()];
+                
+                if(records[k]) {
+                    records[k].forEach(r => {
+                        if(r.type==='expense' && r.nature!=='fixed') monthExpense += r.amount;
+                    });
+                }
+                loop.setDate(loop.getDate() + 1);
             }
             
+            // 아직 시작도 안 한 달이면 0으로 처리하지 않고 스킵 (그래프 안그림)
+            if(getDateKey(startDate) > todayKey) continue;
+
+            let saved = monthBudget - monthExpense;
             points.push(saved);
             labels.push(`${m+1}월`);
-            loopD.setMonth(loopD.getMonth() + 1);
         }
+
+        if(points.length === 0) return;
 
         let pointWidth = 60;
         let totalW = Math.max(points.length * pointWidth + 40, svg.clientWidth); 
@@ -725,7 +738,7 @@
     }
     function closeBudgetModal(e) { if(e.target.id==="budgetOverlay") document.getElementById("budgetOverlay").classList.remove("active"); }
 
-    // --- 카테고리 관리 ---
+    // --- 카테고리 관리 (수정 가능) ---
     function openCategorySettings() {
         closeSettingsReal();
         document.getElementById("categoryOverlay").classList.add("active");
@@ -738,7 +751,10 @@
         let list = document.getElementById("categoryListContainer");
         list.innerHTML = "";
         categories.forEach((cat, idx) => {
-            list.innerHTML += `<div class="cat-list-item"><span>${cat}</span><span class="cat-delete-btn" onclick="deleteCategory(${idx})">✕</span></div>`;
+            list.innerHTML += `<div class="cat-list-item">
+                <span>${cat}</span>
+                <span class="cat-edit-btn" onclick="editCategory(${idx})">✏️ 수정</span>
+            </div>`;
         });
     }
     function addCategory() {
@@ -750,18 +766,18 @@
             saveData();
         }
     }
-    // (이름 충돌 방지용 래퍼 함수)
     window.addNewCategory = addCategory;
     
-    function deleteCategory(idx) {
-        if(confirm("삭제하시겠습니까?")) {
-            categories.splice(idx, 1);
+    function editCategory(idx) {
+        let newName = prompt("수정할 카테고리 이름을 입력하세요:", categories[idx]);
+        if(newName && newName.trim() !== "") {
+            categories[idx] = newName.trim();
             renderCategoryList();
             saveData();
         }
     }
 
-    // --- 대시보드 및 기존 로직 ---
+    // --- 대시보드 (통일된 로직 적용) ---
     function updateDashboard() {
         let today = new Date();
         let todayKey = getDateKey(today);
@@ -784,10 +800,15 @@
             if(r.type === 'withdraw_saving') totalRecordedSavings -= r.amount;
         });
         document.getElementById("savingsDisplay").innerText = formatMoney(initialSavings + totalRecordedSavings) + "원";
+
+        // 아낀 돈 (기준일 로직)
         let startYear = today.getFullYear(), startMonth = today.getMonth();
         if (today.getDate() < payday) startMonth -= 1;
+        
         let accumulatedSaved = 0;
         let loopDate = new Date(startYear, startMonth, payday);
+        
+        // 기준일부터 '오늘'까지만
         while(getDateKey(loopDate) <= todayKey) {
             let key = getDateKey(loopDate);
             let dailyBudget = budgets[loopDate.getDay()];
@@ -809,13 +830,12 @@
         const typeSelect = document.getElementById("inputType");
         const catSelect = document.getElementById("inputCategory");
         
-        // 카테고리 옵션 갱신
         catSelect.innerHTML = "";
         categories.forEach(cat => { catSelect.add(new Option(cat, cat)); });
         catSelect.add(new Option("기타 (직접입력)", "기타"));
 
         typeSelect.innerHTML = ""; 
-        document.getElementById("btnNoSpend").style.display = "none"; // 기본 숨김
+        document.getElementById("btnNoSpend").style.display = "none"; 
 
         if (record) { 
             if(record.type === 'expense' || record.type === 'saving') {
@@ -831,7 +851,6 @@
             document.getElementById("inputMemo").value = record.memo || "";
             typeSelect.value = record.type;
             
-            // 카테고리 세팅
             if(record.category && categories.includes(record.category)) {
                 catSelect.value = record.category;
                 document.getElementById("customCategory").classList.add("hidden");
@@ -850,7 +869,6 @@
             if (mode === 'expense') {
                 typeSelect.add(new Option("지출", "expense"));
                 typeSelect.add(new Option("저축", "saving"));
-                // 오늘 날짜인 경우에만 무지출 버튼 표시
                 if(getDateKey(selectedDate) === getDateKey(new Date())) {
                     document.getElementById("btnNoSpend").style.display = "block";
                 }
@@ -872,7 +890,6 @@
     function handleCategoryChange() { document.getElementById("customCategory").classList.toggle("hidden", document.getElementById("inputCategory").value !== "기타"); }
     function closeForm(e) { if(e.target.id==="formOverlay") document.getElementById("formOverlay").classList.remove("active"); }
     
-    // 무지출 저장
     function saveNoSpend() {
         document.getElementById("inputAmount").value = "0";
         document.getElementById("inputCategory").value = "기타";
@@ -888,7 +905,6 @@
         let memo = document.getElementById("inputMemo").value;
         let nature = "variable"; let category = "-";
         
-        // 0원 허용 (무지출)
         if(!dateVal) { alert("날짜를 확인하세요."); return; }
 
         if(type === 'expense') {
@@ -918,7 +934,7 @@
         let firstDay = new Date(year, month, 1).getDay();
         let lastDate = new Date(year, month+1, 0).getDate();
         
-        let today = new Date(); // 오늘
+        let today = new Date(); 
 
         for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement("div"));
         for(let d=1; d<=lastDate; d++){
@@ -943,22 +959,15 @@
                 });
             }
             
-            // 점 표시 로직
             let limit = budgets[dayOfWeek];
             
-            // 1. 지출이 있는 경우
+            // 점 표시 로직 (자동 성공 삭제됨, 직접 기록시에만)
             if(dailyExp > 0) {
                 let dot = document.createElement("div"); dot.className = "status-dot";
                 if(dailyExp > limit) dot.classList.add("dot-red"); else if(dailyExp === limit) dot.classList.add("dot-yellow"); else dot.classList.add("dot-green");
                 dotsContainer.appendChild(dot);
             } 
-            // 2. 과거인데 지출이 0원인 경우 (무지출 자동 성공)
-            else if (dateObj < today && getDateKey(dateObj) !== getDateKey(today)) {
-                 let dot = document.createElement("div"); dot.className = "status-dot dot-green"; // 과거 0원은 성공
-                 dotsContainer.appendChild(dot);
-            }
-            // 3. 오늘인데 "무지출" 기록이 있는 경우 (0원 기록 존재)
-            else if (hasRecord && dailyExp === 0) {
+            else if (hasRecord && dailyExp === 0) { // 0원(무지출) 기록이 있으면 초록점
                  let dot = document.createElement("div"); dot.className = "status-dot dot-green";
                  dotsContainer.appendChild(dot);
             }
